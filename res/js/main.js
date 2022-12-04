@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import gsap from "gsap";
 import Stats from 'three/examples/jsm/libs/stats.module';
 
 
@@ -239,16 +240,41 @@ async function importQuestionModel(){
     questionObject.scale.set(0.5, 0.5, 0.5);
     questionObject.position.set(0, -1, 0);
     questionObject.rotation.y = 1.5;
+    // questionObject.rotation.y = 8;
 }
 
 // Question mouseenter
 questionRenderer.domElement.addEventListener('mouseenter', () => {
     console.log('Question mark mouseenter');
+
+    gsap.to(questionObject.rotation, {
+        duration: 0.8,
+        y: 8
+    })
+
+    gsap.to(questionObject.scale, {
+        duration: 0.8,
+        x: 0.6,
+        y: 0.6,
+        z: 0.6
+    })
 })
 
 // Question mouseleave
 questionRenderer.domElement.addEventListener('mouseleave', () => {
     console.log('Question mark mouseleave');
+
+    gsap.to(questionObject.rotation, {
+        duration: 0.6,
+        y: 1.5
+    })
+
+    gsap.to(questionObject.scale, {
+        duration: 0.6,
+        x: 0.5,
+        y: 0.5,
+        z: 0.5
+    })
 })
 
 // Question onclick
