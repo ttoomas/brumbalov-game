@@ -3,11 +3,13 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import Stats from 'three/examples/jsm/libs/stats.module';
 
+
+
 // AUDIO
-let battleAudio = new Audio('/res/audio/battle-sound.mp3');
-let bossWelcomeRoundAudio = new Audio('/res/audio/boss-round-welcome-sound.mp3');
-let dictionaryBgAudio = new Audio('/res/audio/dictionary-bg-sound.mp3');
-let openingBgAudio = new Audio('/res/audio/opening-bg-sound.mp3');
+let battleAudio = new Audio('/battle-sound.mp3');
+let bossWelcomeRoundAudio = new Audio('/boss-round-welcome-sound.mp3');
+let dictionaryBgAudio = new Audio('/dictionary-bg-sound.mp3');
+let openingBgAudio = new Audio('/opening-bg-sound.mp3');
 
 battleAudio.volume = 0.25;
 bossWelcomeRoundAudio.volume = 0.6;
@@ -21,8 +23,10 @@ let camera, scene, renderer;
 
 const gltfLoader = new GLTFLoader();
 
-let houseObject, questionObject;
-let homeMouse, homeRaycaster;
+let houseObject;
+
+let homeRaycaster = new THREE.Raycaster();
+let homeMouse = new THREE.Vector2();
 
 
 // THREE INIT
@@ -47,10 +51,7 @@ async function homeSceneInit(){
     
     scene.add(pointLight, ambientLight);
     
-    // Home Render
-    homeRaycaster = new THREE.Raycaster();
-    homeMouse = new THREE.Vector2();
-    
+    // Home Render    
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.innerWidth / window.innerHeight);
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -58,7 +59,7 @@ async function homeSceneInit(){
 
     // Functions
     await importHouseModel();
-    await importQuestionModel();
+    // await importQuestionModel();
 
     controlsFunction();
 
@@ -87,35 +88,35 @@ function bodyMouseMove(){
         houseObject.rotation.y = moveY;
         houseObject.rotation.z = moveZ;
     
-        // Question mark hover
-        homeMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-        homeMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+        // // Question mark hover
+        // homeMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+        // homeMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
     
-        homeRaycaster.setFromCamera(homeMouse, camera);
+        // homeRaycaster.setFromCamera(homeMouse, camera);
     
-        let intersects = homeRaycaster.intersectObject(scene, true);
+        // let intersects = homeRaycaster.intersectObject(scene, true);
     
-        if(intersects.length > 0){
-            let object = intersects[0].object;
+        // if(intersects.length > 0){
+        //     let object = intersects[0].object;
     
-            if(object.name === "Torus002_Material001_0"){
-                questionOnMouseEnterHandle();
-            }
-        }
+        //     if(object.name === "Torus002_Material001_0"){
+        //         questionOnMouseEnterHandle();
+        //     }
+        // }
     })
 }
 
 // Import question mark model
-async function importQuestionModel(){
-    const questioGLTF = await gltfLoader.loadAsync('/question-mark.glb');
-    questionObject = questioGLTF.scene;
+// async function importQuestionModel(){
+//     const questioGLTF = await gltfLoader.loadAsync('/question-mark.glb');
+//     questionObject = questioGLTF.scene;
     
-    scene.add(questionObject);
+//     scene.add(questionObject);
     
-    questionObject.position.set(5.63, 1, 1.48);
-    questionObject.rotation.set(0.5, 1.75, -0.5);
-    questionObject.scale.set(0.01, 0.01, 0.01);
-}
+//     questionObject.position.set(5.63, 1, 1.48);
+//     questionObject.rotation.set(0.5, 1.75, -0.5);
+//     questionObject.scale.set(0.01, 0.01, 0.01);
+// }
 
 
 
@@ -137,18 +138,18 @@ function handleHomeClick(e){
 
         // House
 
-        // Question Mark
-        if(object.name === "Torus002_Material001_0"){
-            questionOnClickHandle();
-        }
+        // // Question Mark
+        // if(object.name === "Torus002_Material001_0"){
+        //     questionOnClickHandle();
+        // }
     }
 }
 
 
 // Question mark onclick handle
-function questionOnClickHandle(){
-    console.log('open help menu');
-}
+// function questionOnClickHandle(){
+//     console.log('open help menu');
+// }
 
 // Question mark onmouseenter handle
 function questionOnMouseEnterHandle(){
@@ -156,7 +157,17 @@ function questionOnMouseEnterHandle(){
 }
 
 
+// ANIMATE
+function animate(){
+    stats.begin();
 
+    renderer.render(scene, camera);
+    controlsVar.update();
+
+    requestAnimationFrame(animate);
+
+    stats.end();
+}
 
 
 // CONTROLS - DEVELOPMENT ONLY
@@ -178,14 +189,91 @@ function controlsFunction(){
 }
 
 
-// ANIMATE
-function animate(){
-    stats.begin();
+// QUESTION MARK
+let questionScene, questionCamera, questionRenderer;
 
-    renderer.render(scene, camera);
-    controlsVar.update();
+questionSceneInit();
 
-    requestAnimationFrame(animate);
+async function questionSceneInit(){
+    questionScene = new THREE.Scene();
+    
+    questionScene.background = null;
+    
+    // Camera
+    questionCamera = new THREE.PerspectiveCamera(75, 0.875, 0.1, 1000);
+    questionCamera.aspect = 0.875;
+    questionCamera.position.set(6.5, 2, 0.5);
+    
+    
+    // Lights
+    const pointLight = new THREE.PointLight(0xffffff);
+    pointLight.position.set(5, 50, 50);
+    const ambientLight = new THREE.AmbientLight(0xffffff);
+    
+    questionScene.add(pointLight, ambientLight);
+    
+    // Home Render    
+    questionRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    questionRenderer.setPixelRatio(0.875);
+    questionRenderer.setSize(70, 80);
+    questionRenderer.domElement.classList.add('questionScene');
+    home.appendChild(questionRenderer.domElement);
 
-    stats.end();
+    // Functions
+    await importQuestionModel();
+
+    questionControlsFunction();
+
+    questionAnimate();
+}
+
+// Question import
+let questionObject;
+
+async function importQuestionModel(){
+    const questioGLTF = await gltfLoader.loadAsync('/question-mark.glb');
+    questionObject = questioGLTF.scene;
+
+    questionScene.add(questionObject);
+
+    questionObject.scale.set(0.5, 0.5, 0.5);
+    questionObject.position.set(0, -1, 0);
+    questionObject.rotation.y = 1.5;
+}
+
+// Question mouseenter
+questionRenderer.domElement.addEventListener('mouseenter', () => {
+    console.log('Question mark mouseenter');
+})
+
+// Question mouseleave
+questionRenderer.domElement.addEventListener('mouseleave', () => {
+    console.log('Question mark mouseleave');
+})
+
+// Question onclick
+questionRenderer.domElement.addEventListener('click', () => {
+    console.log('Question mark click');
+})
+
+
+// QUESTION CONTROLS
+let questionControlsVar;
+
+function questionControlsFunction(){
+    questionControlsVar = new OrbitControls(questionCamera, questionRenderer.domElement);
+    questionControlsVar.enabled = false;
+    
+    questionControlsVar.addEventListener('change', () => {
+        console.log(questionCamera.position);
+    })
+}
+
+
+// QUESTION ANIMATE
+function questionAnimate(){
+    questionRenderer.render(questionScene, questionCamera);
+    requestAnimationFrame(questionAnimate);
+
+    questionControlsVar.update();
 }
