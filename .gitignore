@@ -23,8 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 
-# Local Netlify folder
-.netlify
-
 # Raw Files
 res/raw-file/

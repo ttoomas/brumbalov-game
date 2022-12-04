@@ -19,7 +19,7 @@ openingBgAudio.volume = 0.3;
 const home = document.getElementById('home');
 let camera, scene, renderer;
 
-const gltfLoader = new GLTFLoader().setPath('/res/models/');
+const gltfLoader = new GLTFLoader();
 
 let houseObject, questionObject;
 let homeMouse, homeRaycaster;
@@ -31,7 +31,7 @@ homeSceneInit();
 async function homeSceneInit(){
     scene = new THREE.Scene();
     
-    const sceneBackgroundTexture = new THREE.TextureLoader().load('/res/images/homeSceneBg.jpg');
+    const sceneBackgroundTexture = new THREE.TextureLoader().load('/homeSceneBg.jpg');
     scene.background = sceneBackgroundTexture;
     
     // Camera
@@ -71,7 +71,7 @@ async function homeSceneInit(){
 
 // Import house model
 async function importHouseModel(){
-    const houseGLTF = await gltfLoader.loadAsync('house.glb');
+    const houseGLTF = await gltfLoader.loadAsync('/house.glb');
     houseObject = houseGLTF.scene;
     
     scene.add(houseObject);
@@ -107,7 +107,7 @@ function bodyMouseMove(){
 
 // Import question mark model
 async function importQuestionModel(){
-    const questioGLTF = await gltfLoader.loadAsync('question-mark.glb');
+    const questioGLTF = await gltfLoader.loadAsync('/question-mark.glb');
     questionObject = questioGLTF.scene;
     
     scene.add(questionObject);
