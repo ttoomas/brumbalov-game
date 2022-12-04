@@ -4,10 +4,10 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import Stats from 'three/examples/jsm/libs/stats.module';
 
 // AUDIO
-let battleAudio = new Audio('./res/audio/battle-sound.mp3');
-let bossWelcomeRoundAudio = new Audio('./res/audio/boss-round-welcome-sound.mp3');
-let dictionaryBgAudio = new Audio('./res/audio/dictionary-bg-sound.mp3');
-let openingBgAudio = new Audio('./res/audio/opening-bg-sound.mp3');
+let battleAudio = new Audio('/res/audio/battle-sound.mp3');
+let bossWelcomeRoundAudio = new Audio('/res/audio/boss-round-welcome-sound.mp3');
+let dictionaryBgAudio = new Audio('/res/audio/dictionary-bg-sound.mp3');
+let openingBgAudio = new Audio('/res/audio/opening-bg-sound.mp3');
 
 battleAudio.volume = 0.25;
 bossWelcomeRoundAudio.volume = 0.6;
@@ -19,7 +19,7 @@ openingBgAudio.volume = 0.3;
 const home = document.getElementById('home');
 let camera, scene, renderer;
 
-const gltfLoader = new GLTFLoader().setPath('./res/models/');
+const gltfLoader = new GLTFLoader().setPath('/res/models/');
 
 let houseObject, questionObject;
 let homeMouse, homeRaycaster;
@@ -31,7 +31,7 @@ homeSceneInit();
 async function homeSceneInit(){
     scene = new THREE.Scene();
     
-    const sceneBackgroundTexture = new THREE.TextureLoader().load('./res/images/homeSceneBg.jpg');
+    const sceneBackgroundTexture = new THREE.TextureLoader().load('/res/images/homeSceneBg.jpg');
     scene.background = sceneBackgroundTexture;
     
     // Camera
