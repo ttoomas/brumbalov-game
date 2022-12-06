@@ -278,9 +278,19 @@ questionRenderer.domElement.addEventListener('mouseleave', () => {
 })
 
 // Question onclick
+const helpContainer = document.querySelector('.help');
+
 questionRenderer.domElement.addEventListener('click', () => {
-    console.log('Question mark click');
+    helpContainer.style.animation = "fadeIn 300ms ease-in-out forwards";
 })
+
+// Leave help
+const helpLeave = document.querySelector('.help__leaveBx');
+
+helpLeave.addEventListener('click', () => {
+    helpContainer.style.animation = "fadeOut 300ms ease-in-out forwards";
+})
+
 
 
 // QUESTION CONTROLS
