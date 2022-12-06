@@ -7,10 +7,10 @@ import Stats from 'three/examples/jsm/libs/stats.module';
 
 
 // AUDIO
-let battleAudio = new Audio('/battle-sound.mp3');
-let bossWelcomeRoundAudio = new Audio('/boss-round-welcome-sound.mp3');
-let dictionaryBgAudio = new Audio('/dictionary-bg-sound.mp3');
-let openingBgAudio = new Audio('/opening-bg-sound.mp3');
+let battleAudio = new Audio('/audio/battle-sound.mp3');
+let bossWelcomeRoundAudio = new Audio('/audio/boss-round-welcome-sound.mp3');
+let dictionaryBgAudio = new Audio('/audio/dictionary-bg-sound.mp3');
+let openingBgAudio = new Audio('/audio/opening-bg-sound.mp3');
 
 battleAudio.volume = 0.25;
 bossWelcomeRoundAudio.volume = 0.6;
@@ -36,7 +36,7 @@ homeSceneInit();
 async function homeSceneInit(){
     scene = new THREE.Scene();
     
-    const sceneBackgroundTexture = new THREE.TextureLoader().load('/homeSceneBg.jpg');
+    const sceneBackgroundTexture = new THREE.TextureLoader().load('/images/homeSceneBg.jpg');
     scene.background = sceneBackgroundTexture;
     
     // Camera
@@ -73,7 +73,7 @@ async function homeSceneInit(){
 
 // Import house model
 async function importHouseModel(){
-    const houseGLTF = await gltfLoader.loadAsync('/house.glb');
+    const houseGLTF = await gltfLoader.loadAsync('/models/house.glb');
     houseObject = houseGLTF.scene;
     
     scene.add(houseObject);
@@ -232,7 +232,7 @@ async function questionSceneInit(){
 let questionObject;
 
 async function importQuestionModel(){
-    const questioGLTF = await gltfLoader.loadAsync('/question-mark.glb');
+    const questioGLTF = await gltfLoader.loadAsync('/models/question-mark.glb');
     questionObject = questioGLTF.scene;
 
     questionScene.add(questionObject);
@@ -282,14 +282,26 @@ const helpContainer = document.querySelector('.help');
 
 questionRenderer.domElement.addEventListener('click', () => {
     helpContainer.style.animation = "fadeIn 300ms ease-in-out forwards";
+
+    checkLeaveKey();
 })
 
+function checkLeaveKey(){
+    window.addEventListener('keydown', (e) => {
+        console.log(e);
+        if(e.code === "Escape"){
+            helpLeave();
+        }
+    })
+}
 // Leave help
-const helpLeave = document.querySelector('.help__leaveBx');
+const helpLeaveBx = document.querySelector('.help__leaveBx');
 
-helpLeave.addEventListener('click', () => {
+helpLeaveBx.addEventListener('click', helpLeave, false);
+
+function helpLeave(){
     helpContainer.style.animation = "fadeOut 300ms ease-in-out forwards";
-})
+}
 
 
 
