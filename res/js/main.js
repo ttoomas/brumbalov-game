@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import gsap from "gsap";
+import createScene from "./createScene";
 import Stats from 'three/examples/jsm/libs/stats.module';
 
 
@@ -19,8 +20,8 @@ openingBgAudio.volume = 0.3;
 
 
 // VARIABLES
-const home = document.getElementById('home');
-let camera, scene, renderer;
+const homeParent = document.getElementById('home');
+let homeCamera, homeScene, homeRenderer;
 
 const gltfLoader = new GLTFLoader();
 
@@ -34,91 +35,43 @@ let homeMouse = new THREE.Vector2();
 homeSceneInit();
 
 async function homeSceneInit(){
-    scene = new THREE.Scene();
-    
+    homeScene = new THREE.Scene();
     const sceneBackgroundTexture = new THREE.TextureLoader().load('/images/homeSceneBg.jpg');
-    scene.background = sceneBackgroundTexture;
-    
-    // Camera
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.position.set(6.5, 2, 0.5);
-    
-    
-    // Lights
-    const pointLight = new THREE.PointLight(0xffffff);
-    pointLight.position.set(5, 50, 50);
-    const ambientLight = new THREE.AmbientLight(0xffffff);
-    
-    scene.add(pointLight, ambientLight);
-    
-    // Home Render    
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(window.innerWidth / window.innerHeight);
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    home.appendChild(renderer.domElement);
+    homeCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    homeRenderer = new THREE.WebGLRenderer({ antialias: true });
+
+    createScene(homeScene, sceneBackgroundTexture, homeCamera, [6.5, 2, 0.5], homeRenderer, homeParent);
 
     // Functions
     await importHouseModel();
-    // await importQuestionModel();
 
     controlsFunction();
 
     bodyMouseMove();
     animate();
 
-
-    renderer.domElement.addEventListener('click', handleHomeClick, false);
+    homeRenderer.domElement.addEventListener('click', handleHomeClick, false);
 }
+
 
 // Import house model
 async function importHouseModel(){
     const houseGLTF = await gltfLoader.loadAsync('/models/house.glb');
     houseObject = houseGLTF.scene;
     
-    scene.add(houseObject);
+    homeScene.add(houseObject);
 }
 
 // Mooving house on cursor move
 function bodyMouseMove(){
     document.body.addEventListener('mousemove', (e) => {
-        // Move with house
         let moveY = ((e.screenX / window.innerWidth) / 8) - 0.1;
         let moveZ = ((e.screenY / window.innerHeight) / -6) + 0.1;
         
         houseObject.rotation.y = moveY;
         houseObject.rotation.z = moveZ;
-    
-        // // Question mark hover
-        // homeMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-        // homeMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-    
-        // homeRaycaster.setFromCamera(homeMouse, camera);
-    
-        // let intersects = homeRaycaster.intersectObject(scene, true);
-    
-        // if(intersects.length > 0){
-        //     let object = intersects[0].object;
-    
-        //     if(object.name === "Torus002_Material001_0"){
-        //         questionOnMouseEnterHandle();
-        //     }
-        // }
     })
 }
-
-// Import question mark model
-// async function importQuestionModel(){
-//     const questioGLTF = await gltfLoader.loadAsync('/question-mark.glb');
-//     questionObject = questioGLTF.scene;
-    
-//     scene.add(questionObject);
-    
-//     questionObject.position.set(5.63, 1, 1.48);
-//     questionObject.rotation.set(0.5, 1.75, -0.5);
-//     questionObject.scale.set(0.01, 0.01, 0.01);
-// }
-
 
 
 // HOME ONCLICK
@@ -128,33 +81,35 @@ function handleHomeClick(e){
     homeMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
     homeMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 
-    homeRaycaster.setFromCamera(homeMouse, camera);
+    homeRaycaster.setFromCamera(homeMouse, homeCamera);
 
-    let intersects = homeRaycaster.intersectObject(scene, true);
+    let intersects = homeRaycaster.intersectObject(homeScene, true);
 
     if(intersects.length > 0){
         let object = intersects[0].object;
     
-        console.log(object);
+        // Vocabulary table
+        if(object.name.includes('Vocabulary_Table_')){
+            console.log('Table');
 
-        // House
+            // Change camera position
+        }
 
-        // // Question Mark
-        // if(object.name === "Torus002_Material001_0"){
-        //     questionOnClickHandle();
-        // }
+        // Doors
+        if(object.name.includes('Brick_Door_')){
+            console.log('Door');
+        }
+
+        // Arsenal
+        if(object.name.includes('Arsenal_Change_')){
+            console.log('Arsenal');
+        }
+
+        // Cauldron
+        if(object.name.includes('Heal_Cauldron')){
+            console.log('Cauldron');
+        }
     }
-}
-
-
-// Question mark onclick handle
-// function questionOnClickHandle(){
-//     console.log('open help menu');
-// }
-
-// Question mark onmouseenter handle
-function questionOnMouseEnterHandle(){
-    console.log('hover mark');
 }
 
 
@@ -162,7 +117,7 @@ function questionOnMouseEnterHandle(){
 function animate(){
     stats.begin();
 
-    renderer.render(scene, camera);
+    homeRenderer.render(homeScene, homeCamera);
     controlsVar.update();
 
     requestAnimationFrame(animate);
@@ -175,19 +130,18 @@ function animate(){
 let controlsVar, stats;
 
 function controlsFunction(){
-    controlsVar = new OrbitControls(camera, renderer.domElement);
-    
-    scene.add(new THREE.AxesHelper(5));
-    // red = x  green = y   blue = z
+    controlsVar = new OrbitControls(homeCamera, homeRenderer.domElement);
+    controlsVar.enabled = false;
     
     controlsVar.addEventListener('change', () => {
-        console.log(camera.position);
+        console.log(homeCamera.position);
     })
     
     stats = new Stats();
     stats.showPanel(0);
     document.body.appendChild(stats.dom);
 }
+
 
 
 // QUESTION MARK
@@ -240,13 +194,10 @@ async function importQuestionModel(){
     questionObject.scale.set(0.5, 0.5, 0.5);
     questionObject.position.set(0, -1, 0);
     questionObject.rotation.y = 1.5;
-    // questionObject.rotation.y = 8;
 }
 
 // Question mouseenter
 questionRenderer.domElement.addEventListener('mouseenter', () => {
-    console.log('Question mark mouseenter');
-
     gsap.to(questionObject.rotation, {
         duration: 0.8,
         y: 8
@@ -262,8 +213,6 @@ questionRenderer.domElement.addEventListener('mouseenter', () => {
 
 // Question mouseleave
 questionRenderer.domElement.addEventListener('mouseleave', () => {
-    console.log('Question mark mouseleave');
-
     gsap.to(questionObject.rotation, {
         duration: 0.6,
         y: 1.5
