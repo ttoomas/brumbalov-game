@@ -32,6 +32,7 @@ let homeMouse = new THREE.Vector2();
 
 
 // THREE INIT
+let controlsVar;
 homeSceneInit();
 
 async function homeSceneInit(){
@@ -41,13 +42,15 @@ async function homeSceneInit(){
     homeRenderer = new THREE.WebGLRenderer({ antialias: true });
 
     createScene(homeScene, sceneBackgroundTexture, homeCamera, [6.5, 2, 0.5], homeRenderer, homeParent);
+    
+    controlsVar = new OrbitControls(homeCamera, homeRenderer.domElement);
 
     // Functions
     await importHouseModel();
 
     controlsFunction();
 
-    bodyMouseMove();
+    // bodyMouseMove();
     animate();
 
     homeRenderer.domElement.addEventListener('click', handleHomeClick, false);
@@ -56,7 +59,7 @@ async function homeSceneInit(){
 
 // Import house model
 async function importHouseModel(){
-    const houseGLTF = await gltfLoader.loadAsync('/models/house.glb');
+    const houseGLTF = await gltfLoader.loadAsync('/models/new-house-model.glb');
     houseObject = houseGLTF.scene;
     
     homeScene.add(houseObject);
@@ -87,12 +90,27 @@ function handleHomeClick(e){
 
     if(intersects.length > 0){
         let object = intersects[0].object;
+
+        console.log(object);
     
         // Vocabulary table
         if(object.name.includes('Vocabulary_Table_')){
             console.log('Table');
 
             // Change camera position
+            gsap.to(homeCamera.position, {
+                duration: 1,
+                x: 3.1770095122945516,
+                y: 0.6126561661774869,
+                z: 2.845686434734792
+            })
+
+            gsap.to(controlsVar.target, {
+                duration: 1,
+                x: 0.5206104737929833,
+                y: -0.44962723446350095,
+                z: 3.6240351733161136
+            })
         }
 
         // Doors
@@ -126,15 +144,16 @@ function animate(){
 }
 
 
-// CONTROLS - DEVELOPMENT ONLY
-let controlsVar, stats;
+// HOME CONTROLS
+let stats;
 
 function controlsFunction(){
-    controlsVar = new OrbitControls(homeCamera, homeRenderer.domElement);
     controlsVar.enabled = false;
     
     controlsVar.addEventListener('change', () => {
         console.log(homeCamera.position);
+        console.log('target (lookAt)');
+        console.log(controlsVar.target);
     })
     
     stats = new Stats();

@@ -1,4 +1,4 @@
-;const leftArrow = document.querySelector('.help__arrow.leftArrow');
+const leftArrow = document.querySelector('.help__arrow.leftArrow');
 const rightArrow = document.querySelector('.help__arrow.rightArrow');
 
 const helpContent = document.querySelectorAll('.help__contentBx');
