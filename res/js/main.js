@@ -30,6 +30,9 @@ let houseObject;
 let homeRaycaster = new THREE.Raycaster();
 let homeMouse = new THREE.Vector2();
 
+let selectedObject;
+let parent;
+
 
 // THREE INIT
 let controlsVar;
@@ -47,6 +50,15 @@ async function homeSceneInit(){
 
     // Functions
     await importHouseModel();
+
+    selectedObject = houseObject.getObjectByName("Book_Open_Vocabulary_1");
+    parent = selectedObject.parent;
+    parent.remove(selectedObject);
+
+    // selectedObject = houseObject.getObjectByName("Book_Open_Vocabulary_2");
+    // parent = selectedObject.parent;
+    // parent.remove(selectedObject);
+        
 
     controlsFunction();
 
@@ -111,6 +123,17 @@ function handleHomeClick(e){
                 y: -0.44962723446350095,
                 z: 3.6240351733161136
             })
+
+            setTimeout(() => {
+                parent.add(selectedObject);
+                selectedObject.material.transparent = true;
+                selectedObject.material.opacity = 0;
+                gsap.to(selectedObject.material, {
+                    duration: 0.5,
+                    opacity: 1
+                })
+            }, 1100);
+
         }
 
         // Doors
