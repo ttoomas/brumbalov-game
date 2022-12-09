@@ -62,7 +62,7 @@ async function homeSceneInit(){
 
 // Import house model
 async function importHouseModel(){
-    const houseGLTF = await gltfLoader.loadAsync('/models/new-house-model.glb');
+    const houseGLTF = await gltfLoader.loadAsync('/models/house.glb');
     houseObject = houseGLTF.scene;
     
     homeScene.add(houseObject);
@@ -76,8 +76,8 @@ let doorTextMesh;
 let doorTextParent;
 let arsenalTextMesh;
 let arsenalTextParent;
-let healCauldronTextMesh;
-let healCauldronTextParent;
+let cauldronTextMesh;
+let cauldronTextParent;
 
 function updateHomeModel(){
     // TODO - mesh.parent.name - smaze cely mesh (asi)
@@ -106,10 +106,10 @@ function updateHomeModel(){
     arsenalTextParent.remove(arsenalTextMesh);
 
     // Heal Cauldron Text
-    healCauldronTextMesh = deleteMeshFromHouse(healCauldronTextMesh, "Heal_Cauldron_2");
+    cauldronTextMesh = deleteMeshFromHouse(cauldronTextMesh, "Heal_Cauldron_2");
 
-    healCauldronTextParent = healCauldronTextMesh.parent;
-    healCauldronTextParent.remove(healCauldronTextMesh);
+    cauldronTextParent = cauldronTextMesh.parent;
+    cauldronTextParent.remove(cauldronTextMesh);
 }
 
 function deleteMeshFromHouse(variable, meshObjectName){
@@ -138,7 +138,10 @@ function bodyMouseMove(){
 let activeVocabulary = false;
 let activeDoor = false;
 let activeArsenal = false;
-let activeHealCauldron = false;
+let activeCauldron = false;
+
+let runningCameraAnimation = false;
+
 
 checkEscToResetCamera();
 
@@ -158,16 +161,20 @@ function handleHomeClick(e){
         console.log(object);
 
         // ACTIVE
-        // Active Vocabulary
+        if(runningCameraAnimation) return;
+
         if(activeVocabulary) activeVocabularyHandler(object);
         if(activeDoor) activeDoorHandler(object);
+        if(activeArsenal) activeArsenalHandler(object);
+        if(activeCauldron) activeCauldronHandler(object);
 
     
         // Vocabulary table
-        if(object.name.includes('Vocabulary_Table_')){
+        else if(object.name.includes('Vocabulary_Table_')){
             console.log('Table');
 
             activeVocabulary = true;
+            runningCameraAnimation = true;
 
             // Change camera position
             gsap.to(homeCamera.position, {
@@ -181,31 +188,33 @@ function handleHomeClick(e){
                 duration: 1,
                 x: 0.5699371461463288,
                 y: -0.6995119320075021,
-                z: 3.390770266589537
+                z: 3.390770266589537,
+                onComplete: function(){
+                    runningCameraAnimation = false;
+
+                    // Add book cover
+                    bookParent.add(bookCoverMesh);
+                    gsap.to(bookCoverMesh.material, {
+                        duration: 0.8,
+                        opacity: 1
+                    })
+    
+                    // Add book text
+                    bookParent.add(bookTextMesh);
+                    gsap.to(bookTextMesh.material, {
+                        duration: 0.8,
+                        opacity: 1
+                    })
+                }
             })
-
-            setTimeout(() => {
-                // Add book cover
-                bookParent.add(bookCoverMesh);
-                gsap.to(bookCoverMesh.material, {
-                    duration: 0.8,
-                    opacity: 1
-                })
-
-                // Add book text
-                bookParent.add(bookTextMesh);
-                gsap.to(bookTextMesh.material, {
-                    duration: 0.8,
-                    opacity: 1
-                })
-            }, 1100);
         }
 
         // Doors
-        if(object.name.includes('Brick_Door_')){
+        else if(object.name.includes('Brick_Door_')){
             console.log('Door');
 
             activeDoor = true;
+            runningCameraAnimation = true;
 
             // Change Camera position
             gsap.to(homeCamera.position, {
@@ -219,29 +228,27 @@ function handleHomeClick(e){
                 duration: 1,
                 x: -0.23839009429976987,
                 y: 0.79998877865599,
-                z: 0.3056575530841469
+                z: 0.3056575530841469,
+                onComplete: function(){
+                    runningCameraAnimation = false;
+
+                    // Add door text
+                    doorTextParent.add(doorTextMesh);
+        
+                    gsap.to(doorTextMesh.material, {
+                        duration: 0.5,
+                        opacity: 1
+                    })
+                }
             })
-
-            // TODO - oncomplete - add active door to true
-            // - when we zoom in and fast press esc, mesh (book...) will stay on screen
-            // to it everywhere to replace settimeout after the animation is done
-
-            setTimeout(() => {
-                // Add door text
-                doorTextParent.add(doorTextMesh);
-
-                gsap.to(doorTextMesh.material, {
-                    duration: 0.5,
-                    opacity: 1
-                })
-            }, 1000);
         }
 
         // Arsenal
-        if(object.name.includes('Arsenal_Change_')){
+        else if(object.name.includes('Arsenal_Change_')){
             console.log('Arsenal');
 
             activeArsenal = true;
+            runningCameraAnimation = true;
 
             // Change camera position
             gsap.to(homeCamera.position, {
@@ -255,24 +262,57 @@ function handleHomeClick(e){
                 duration: 1,
                 x: 0.09592168431359922,
                 y: -0.17092384230219762,
-                z: -0.556754032928711
+                z: -0.556754032928711,
+                onComplete: function(){
+                    runningCameraAnimation = false;
+
+                    // Add arsenal text
+                    arsenalTextParent.add(arsenalTextMesh);
+        
+                    gsap.to(arsenalTextMesh.material, {
+                        duration: 0.4,
+                        opacity: 1
+                    })
+                }
             })
-
-            setTimeout(() => {
-                // Add arsenal text
-                arsenalTextParent.add(arsenalTextMesh);
-
-                gsap.to(arsenalTextMesh.material, {
-                    duration: 0.4,
-                    opacity: 1
-                })
-            }, 1000);
         }
 
         // Cauldron
-        if(object.name.includes('Heal_Cauldron')){
+        else if(object.name.includes('Heal_Cauldron')){
             console.log('Cauldron');
+
+            activeCauldron = true;
+            runningCameraAnimation = true;
+
+            // Change Camera position
+            gsap.to(homeCamera.position, {
+                duration: 1,
+                x: 1.5537442158098573,
+                y: 0.8886614372300705,
+                z: -2.6065596795355184
+            })
+
+            gsap.to(controlsVar.target, {
+                duration: 1,
+                x: 0.25032504389107,
+                y: 0.31893320797489727,
+                z: -3.1983261882632883,
+                onComplete: function(){
+                    runningCameraAnimation = false;
+
+                    // Add Cauldron text
+                    cauldronTextParent.add(cauldronTextMesh);
+
+                    gsap.to(cauldronTextMesh.material, {
+                        duration: 0.4,
+                        opacity: 1
+                    })
+                }
+            })
         }
+    }
+    else{
+        resetCameraAndDelete();
     }
 }
 
@@ -284,33 +324,76 @@ function activeVocabularyHandler(object){
         console.log('clicked on vocabulary book');
     }
     else{
-        resetHomeCamera();
-        bookDelete();
+        resetCameraAndDelete();
     }
 }
 
 // Active door handler
 function activeDoorHandler(object){
-    console.log(object);
+    if(object.name.includes("Brick_Door_")){
+        console.log('clicked on door');
+    }
+    else{
+        resetCameraAndDelete();
+    }
 }
+
+// Function arsenal handler
+function activeArsenalHandler(object){
+    if(object.name.includes("Arsenal_Change_")){
+        console.log('Clicked on arsenal');
+    }
+    else{
+        resetCameraAndDelete();
+    }
+}
+
+// Function Cauldron handler
+function activeCauldronHandler(object){
+    if(object.name.includes("Heal_Cauldron_")){
+        console.log("clicled on cauldron");
+    }
+    else{
+        resetCameraAndDelete();
+    }
+}
+
 
 
 // Helpers
 function checkEscToResetCamera(){
     window.addEventListener('keydown', (e) => {
-        if(e.code === "Escape" && activeVocabulary){
+        if(e.code === "Escape") resetCameraAndDelete();
+    })
+}
+
+function resetCameraAndDelete(){
+    if(activeVocabulary || activeDoor || activeArsenal || activeCauldron){
+        // Delete all animations
+        gsap.globalTimeline.clear();
+        runningCameraAnimation = false;
+    
+        if(activeVocabulary){
+            activeVocabulary = false;
             resetHomeCamera();
             bookDelete();
         }
-        else if(e.code === "Escape" && activeDoor){
+        else if(activeDoor){
+            activeDoor = false;
             resetHomeCamera();
             homeMeshTextDelete(doorTextMesh, doorTextParent);
         }
-        else if(e.code === "Escape" && activeArsenal){
+        else if(activeArsenal){
+            activeArsenal = false;
             resetHomeCamera();
-            homeMeshTextDelete(arsenalTextMesh, arsenalTextParent)
+            homeMeshTextDelete(arsenalTextMesh, arsenalTextParent);
         }
-    })
+        else if(activeCauldron){
+            activeCauldron = false;
+            resetHomeCamera();
+            homeMeshTextDelete(cauldronTextMesh, cauldronTextParent);
+        }
+    }
 }
 
 function bookDelete(){
@@ -343,9 +426,6 @@ function homeMeshTextDelete(deleteMesh, deleteParent,){
 
 // Function to reset home camera settings
 function resetHomeCamera(){
-    activeVocabulary = false;
-    activeDoor = false;
-
     gsap.to(homeCamera.position, {
         duration: 1,
         ease: "slow(0.7, 0.7, false)",
