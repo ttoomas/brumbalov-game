@@ -317,10 +317,11 @@ p, h1, h2, h3, h4, h5, h6{
     justify-content: center;
     flex-direction: column;
     position: absolute;
-    left: 0;
-    top: 0;
-    height: 100vh;
-    width: 100vw;
+    width: 1350px;
+    height: 735px;
+    left: calc(50% - 11px);
+    top: calc(50% - 14px);
+    translate: -50% -50%;
 
     font-family: 'Walter Turncoat', cursive;
     font-weight: 400;
@@ -337,8 +338,6 @@ p, h1, h2, h3, h4, h5, h6{
     height: 735px;
     display: flex;
     flex-direction: column;
-    margin-right: 30px;
-    margin-bottom: 26px;
     padding: 24px 16px 24px 40px;
 }
 .board__title{

@@ -170,6 +170,8 @@ let activeDoor = false;
 let activeArsenal = false;
 let activeCauldron = false;
 
+let activeBoard = false;
+
 let runningCameraAnimation = false;
 
 
@@ -192,7 +194,7 @@ function handleHomeClick(e){
 
         // ACTIVE
         if(runningCameraAnimation) return;
-
+        
         if(activeVocabulary) activeVocabularyHandler(object);
         if(activeDoor) activeDoorHandler(object);
         if(activeArsenal) activeArsenalHandler(object);
@@ -421,7 +423,7 @@ function checkEscToResetCamera(){
 }
 
 function resetCameraAndDelete(){
-    if(activeVocabulary || activeDoor || activeArsenal || activeCauldron){
+    if(activeVocabulary || activeDoor || activeArsenal || activeCauldron || activeBoard){
         // Delete all animations
         gsap.globalTimeline.clear();
         runningCameraAnimation = false;
@@ -445,6 +447,10 @@ function resetCameraAndDelete(){
             activeCauldron = false;
             resetHomeCamera();
             homeMeshTextDelete(cauldronTextMesh, cauldronTextParent);
+        }
+        else if(activeBoard){
+            activeBoard = false;
+            resetHomeCameraFromBoard();
         }
     }
 }
@@ -503,14 +509,58 @@ function resetHomeCamera(){
     activeZoomIn = false;
 }
 
+// Function to reset camera after escape from board view
+function resetHomeCameraFromBoard(){
+    boardContainer.style.animation = "fadeOut 300ms ease-in-out forwards";
+
+    setTimeout(() => {
+        gsap.to(homeCamera.position, {
+            duration: 1,
+            ease: CustomEase.create("custom", "M0,0 C0.334,0.206 0.458,0.294 0.6,0.4 0.852,0.588 0.986,0.724 1,1 "),
+            x: 137,
+            y: 2.2,
+            z: 200,
+            onComplete: function(){
+                gsap.to(homeCamera.position, {
+                    duration: 1,
+                    ease: "slow(0.7, 0.7, false)",
+                    x: 6.5,
+                    y: 2,
+                    z: 0.5
+                })
+            
+                gsap.to(controlsVar.target, {
+                    duration: 1,
+                    ease: "slow(0.7, 0.7, false)",
+                    x: 0,
+                    y: 0,
+                    z: 0,
+                })
+
+                gsap.to(houseObject.rotation, {
+                    duration: 1,
+                    ease: "slow(0.1, 0.1, false)",
+                    y: moveY,
+                    z: moveZ,
+                })
+            }
+        })
+    }, 300);
+
+    activeZoomIn = false;
+}
+
+
 
 // Function to move with camera to board
 const boardContainer = document.querySelector('.board');
 
 function moveCameraToBoard(){
+    activeVocabulary = false;
+
     gsap.to(homeCamera.position, {
         duration: 1.2,
-        ease: CustomEase.create("custom", "M0,0 C0.334,0.206 0.458,0.294 0.6,0.4 0.852,0.588 0.986,0.724 1,1 "),
+        ease: "slow(0.1, 0.1, false)",
         x: 300,
         y: 90,
         z: 90,
@@ -530,9 +580,15 @@ function moveCameraToBoard(){
                     z: 199.79114296912672,
                     onComplete: function(){
                         boardContainer.style.animation = "fadeIn 300ms ease-in-out forwards 30ms";
+
+                        setTimeout(() => {
+                            activeBoard = true;
+                        }, 330);
                     }
                 })
             }, 50);
+
+            bookDelete();
         }
     })
 }
