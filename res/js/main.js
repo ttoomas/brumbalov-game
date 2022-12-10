@@ -4,7 +4,9 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import gsap, { Power3 } from "gsap";
 import createScene from "./createScene";
 import Stats from 'three/examples/jsm/libs/stats.module';
+import { CustomEase } from "gsap/all";
 
+gsap.registerPlugin(CustomEase);
 
 
 // AUDIO
@@ -25,7 +27,8 @@ let homeCamera, homeScene, homeRenderer;
 
 const gltfLoader = new GLTFLoader();
 
-let houseObject;
+let houseObject,
+    boardObject;
 
 let homeRaycaster = new THREE.Raycaster();
 let homeMouse = new THREE.Vector2();
@@ -47,13 +50,15 @@ async function homeSceneInit(){
 
     // Functions
     await importHouseModel();
+    await importBoardModel();
 
     // Change transparent, delete book and text
-    updateHomeModel();        
+    updateHomeModel();
+    setBoardPosition();
 
     controlsFunction();
 
-    // bodyMouseMove();
+    bodyMouseMove();
     animate();
 
     homeRenderer.domElement.addEventListener('click', handleHomeClick, false);
@@ -68,6 +73,23 @@ async function importHouseModel(){
     homeScene.add(houseObject);
 }
 
+// Import board model
+async function importBoardModel(){
+    const boardGLTF = await gltfLoader.loadAsync('/models/board.glb');
+    boardObject = boardGLTF.scene;
+
+    homeScene.add(boardObject);
+}
+
+// SET BOARD
+function setBoardPosition(){
+    boardObject.position.set(1, 1, 200);
+
+    boardObject.rotation.y = Math.PI / 2;
+}
+
+
+
 // Change house model transparent, delete book
 let bookCoverMesh;
 let bookTextMesh;
@@ -78,6 +100,9 @@ let arsenalTextMesh;
 let arsenalTextParent;
 let cauldronTextMesh;
 let cauldronTextParent;
+
+let activeZoomIn = false;
+
 
 function updateHomeModel(){
     // TODO - mesh.parent.name - smaze cely mesh (asi)
@@ -123,13 +148,18 @@ function deleteMeshFromHouse(variable, meshObjectName){
 
 
 // Mooving house on cursor move
+let moveY,
+    moveZ;
+
 function bodyMouseMove(){
     document.body.addEventListener('mousemove', (e) => {
-        let moveY = ((e.screenX / window.innerWidth) / 8) - 0.1;
-        let moveZ = ((e.screenY / window.innerHeight) / -6) + 0.1;
-        
-        houseObject.rotation.y = moveY;
-        houseObject.rotation.z = moveZ;
+        moveY = ((e.screenX / window.innerWidth) / 8) - 0.1;
+        moveZ = ((e.screenY / window.innerHeight) / -6) + 0.1;
+
+        if(!activeZoomIn){
+            houseObject.rotation.y = moveY;
+            houseObject.rotation.z = moveZ;
+        }
     })
 }
 
@@ -175,8 +205,11 @@ function handleHomeClick(e){
 
             activeVocabulary = true;
             runningCameraAnimation = true;
+            activeZoomIn = true;
 
             // Change camera position
+            resetHouseModelRotation();
+
             gsap.to(homeCamera.position, {
                 duration: 1,
                 x: 2.927868438389019,
@@ -215,8 +248,11 @@ function handleHomeClick(e){
 
             activeDoor = true;
             runningCameraAnimation = true;
+            activeZoomIn = true;
 
             // Change Camera position
+            resetHouseModelRotation();
+
             gsap.to(homeCamera.position, {
                 duration: 1,
                 x: 1.8561061250509379,
@@ -249,8 +285,11 @@ function handleHomeClick(e){
 
             activeArsenal = true;
             runningCameraAnimation = true;
+            activeZoomIn = true;
 
             // Change camera position
+            resetHouseModelRotation();
+
             gsap.to(homeCamera.position, {
                 duration: 1,
                 x: 2.727204473525794,
@@ -283,8 +322,11 @@ function handleHomeClick(e){
 
             activeCauldron = true;
             runningCameraAnimation = true;
+            activeZoomIn = true;
 
             // Change Camera position
+            resetHouseModelRotation();
+
             gsap.to(homeCamera.position, {
                 duration: 1,
                 x: 1.5537442158098573,
@@ -321,7 +363,7 @@ function handleHomeClick(e){
 function activeVocabularyHandler(object){
     if(object.name.includes('Vocabulary_Table_')) return;
     else if(object.name.includes('Book_Open_Vocabulary_')){
-        console.log('clicked on vocabulary book');
+        moveCameraToBoard();
     }
     else{
         resetCameraAndDelete();
@@ -358,6 +400,17 @@ function activeCauldronHandler(object){
     }
 }
 
+
+
+// Reset house model rotation
+function resetHouseModelRotation(){
+    gsap.to(houseObject.rotation, {
+        duration: 1,
+        x: 0,
+        y: 0,
+        z: 0
+    })
+}
 
 
 // Helpers
@@ -439,7 +492,48 @@ function resetHomeCamera(){
         ease: "slow(0.7, 0.7, false)",
         x: 0,
         y: 0,
-        z: 0
+        z: 0,
+    })
+    gsap.to(houseObject.rotation, {
+        duration: 1,
+        ease: "slow(0.1, 0.1, false)",
+        y: moveY,
+        z: moveZ,
+    })
+    activeZoomIn = false;
+}
+
+
+// Function to move with camera to board
+const boardContainer = document.querySelector('.board');
+
+function moveCameraToBoard(){
+    gsap.to(homeCamera.position, {
+        duration: 1.2,
+        ease: CustomEase.create("custom", "M0,0 C0.334,0.206 0.458,0.294 0.6,0.4 0.852,0.588 0.986,0.724 1,1 "),
+        x: 300,
+        y: 90,
+        z: 90,
+        onComplete: function(){
+            setTimeout(() => {
+                gsap.to(homeCamera.position, {
+                    duration: 1,
+                    x: 10.434322404717985,
+                    y: 0.9501287216120705,
+                    z: 199.88687450682315
+                })
+                
+                gsap.to(controlsVar.target, {
+                    duration: 1,
+                    x: -13.230311967635739,
+                    y: 0.7191299825715989,
+                    z: 199.79114296912672,
+                    onComplete: function(){
+                        boardContainer.style.animation = "fadeIn 300ms ease-in-out forwards 30ms";
+                    }
+                })
+            }, 50);
+        }
     })
 }
 

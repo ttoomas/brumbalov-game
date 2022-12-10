@@ -1,4 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Walter+Turncoat&display=swap');
+/* font-family: 'Walter Turncoat', cursive; */
+
 
 html{
     box-sizing: border-box;
@@ -304,4 +307,112 @@ p, h1, h2, h3, h4, h5, h6{
         opacity: 0;
         transform: scale(0.8);
     }
+}
+
+
+/* BOARD */
+.board{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 100vw;
+
+    font-family: 'Walter Turncoat', cursive;
+    font-weight: 400;
+    color: white;
+    
+    visibility: hidden;
+    z-index: -1;
+    opacity: 0;
+    transform: scale(0.8);
+}
+.board__container{
+    /* background-color: rgba(255, 0, 0, 0.479); */
+    width: 1350px;
+    height: 735px;
+    display: flex;
+    flex-direction: column;
+    margin-right: 30px;
+    margin-bottom: 26px;
+    padding: 24px 16px 24px 40px;
+}
+.board__title{
+    font-size: 38px;
+    text-align: center;
+}
+.board__content{
+    display: flex;
+    flex-direction: column;
+    row-gap: 25px;
+    margin-top: 34px;
+    padding-right: 14px;
+    overflow: hidden auto;
+}
+.board__content::-webkit-scrollbar{
+    width: 6px;
+    background-color: #343434;
+}
+.board__content::-webkit-scrollbar-track{
+    border-radius: 12px;
+}
+.board__content::-webkit-scrollbar-thumb{
+    background-color: #9f4d32;
+    border-radius: 12px;
+}
+
+.board__bx{
+    display: flex;
+    flex-direction: row;
+}
+.board__text{
+    display: flex;
+    flex-direction: row;
+    column-gap: 22px;
+}
+.board__left{
+    position: relative;
+}
+.board__speach{
+    position: relative;
+}
+.board__speach::before,
+.board__speach::after{
+    content: '/';
+    display: flex;
+    position: absolute;
+    top: 0;
+}
+.board__speach::after{
+    right: -7px;
+}
+.board__speach::before{
+    left: -7px;
+}
+.board__vs{
+    position: relative;
+    color: #d36642;
+    margin-left: 48px;
+    margin-right: 42px;
+}
+.board__vs::before,
+.board__vs::after{
+    content: '';
+    display: block;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 92%;
+    width: 2px;
+    background-color: #9f4d32;
+}
+.board__vs::before{
+    left: -7px;
+}
+.board__vs::after{
+    right: -7px;
 }
