@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import gsap, { Power3 } from "gsap";
+import gsap from "gsap";
 import createScene from "./createScene";
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { CustomEase } from "gsap/all";
@@ -28,10 +28,13 @@ let homeCamera, homeScene, homeRenderer;
 const gltfLoader = new GLTFLoader();
 
 let houseObject,
-    boardObject;
+    boardObject,
+    brumbalObject;
 
 let homeRaycaster = new THREE.Raycaster();
 let homeMouse = new THREE.Vector2();
+
+let mixer, clock;
 
 
 // THREE INIT
@@ -48,13 +51,17 @@ async function homeSceneInit(){
     
     controlsVar = new OrbitControls(homeCamera, homeRenderer.domElement);
 
+    clock = new THREE.Clock();
+
     // Functions
     await importHouseModel();
     await importBoardModel();
+    await importBrumbalModel();
 
     // Change transparent, delete book and text
     updateHomeModel();
     setBoardPosition();
+    setBrumbalPosition();
 
     controlsFunction();
 
@@ -81,11 +88,35 @@ async function importBoardModel(){
     homeScene.add(boardObject);
 }
 
+// Import brumbál models
+async function importBrumbalModel(){
+    const brumbalGLBF = await gltfLoader.loadAsync('/models/walking.glb');
+    brumbalObject = brumbalGLBF.scene;
+    
+    homeScene.add(brumbalObject);
+
+
+    mixer = new THREE.AnimationMixer(brumbalObject);
+
+    brumbalGLBF.animations.forEach((clip) => {
+        mixer.clipAction(clip).play();
+        console.log(clip);
+    })
+}
+
 // SET BOARD
 function setBoardPosition(){
     boardObject.position.set(1, 1, 200);
 
     boardObject.rotation.y = Math.PI / 2;
+}
+
+// SET BRUMBAL
+function setBrumbalPosition(){
+    // brumbalObject.position.set(100, 1, 1);
+    brumbalObject.position.set(3, 0, -2);
+    brumbalObject.scale.set(0.5, 0.5, 0.5);
+    brumbalObject.rotation.y = Math.PI / 2;
 }
 
 
@@ -602,6 +633,9 @@ function animate(){
     homeRenderer.render(homeScene, homeCamera);
     controlsVar.update();
 
+    let delta = clock.getDelta();
+    if(mixer) mixer.update(delta);
+
     requestAnimationFrame(animate);
 
     stats.end();
@@ -612,7 +646,7 @@ function animate(){
 let stats;
 
 function controlsFunction(){
-    controlsVar.enabled = false;
+    // controlsVar.enabled = false;
     
     // controlsVar.addEventListener('change', () => {
     //     console.log(homeCamera.position);
