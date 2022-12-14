@@ -415,3 +415,39 @@ p, h1, h2, h3, h4, h5, h6{
 .board__vs::after{
     right: -7px;
 }
+
+
+/* GAME SECTION */
+.gameSection{
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 10;
+    padding: 54px 20px;
+}
+.gameSection.playerWin{
+    align-items: center;
+    justify-content: center;
+    background-color: black;
+}
+.gameSection.playerWin .game__score{
+    display: none;
+}
+.gameSection.playerWin .game__win{
+    display: block;
+}
+
+.game__score{
+    font-size: 30px;
+    display: block;
+}
+.game__win{
+    font-size: 40px;
+    font-weight: 400;
+    color: white;
+    display: none;
+}
