@@ -19,6 +19,9 @@ let playerControls = {};
 let playerProjectiles = [];
 let playerShooted = false;
 
+let voldemortProjectiles = [];
+
+
 let player = {
     height: 1.4,
     turnSpeed: 0.1,
@@ -31,8 +34,11 @@ let player = {
 };
 
 const gameSection = document.querySelector('.gameSection');
-const gameScoreText = document.querySelector('.game__score');
-let gameScore = 100;
+const playerHealthText = document.querySelector('.game__playerHealth');
+const voldemortHealthText = document.querySelector('.game__voldemortHealth');
+
+let playerHealth = 100;
+let voldemortHealth = 100;
 
 
 // INIT
@@ -56,15 +62,21 @@ async function initGame(){
     await importVoldemortModel();
     await importBrumbalModel();
 
-    createPlayerProjectile();
+    await createPlayerProjectile();
+
+    createVoldemortProjectile();
 
     createPlane();
 
     windowListenerHandler();
     
     gameControlsInit();
+    voldemortShoot();
     
-    // voldemortRandomPos();
+    updatePlayerProjectiles();
+    updateVoldemortProjectiles();
+
+    voldemortRandomPos();
 
     animate();
 }
@@ -100,13 +112,24 @@ async function importBrumbalModel(){
 // Create player projectile
 let playerProjectileMesh;
 
-function createPlayerProjectile(){
-    const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-    const material = new THREE.MeshPhongMaterial({ color: 'violet', wireframe: false });
-    
-    playerProjectileMesh = new THREE.Mesh(geometry, material);
+async function createPlayerProjectile(){
+    const playerProjectileGLTF = await gltfLoader.loadAsync('/models/fireball.glb');
+    playerProjectileMesh = playerProjectileGLTF.scene;
 
-    playerProjectileMesh.position.set(0, 1, -2);
+    playerProjectileMesh.position.set(0, 0.5, 0);
+    playerProjectileMesh.scale.set(0.04, 0.04, 0.04);
+}
+
+// Create voldemrot projectile
+let voldemortProjectileMesh;
+
+function createVoldemortProjectile(){
+    const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+    const material = new THREE.MeshPhongMaterial({ color: "violet", wireframe: false });
+
+    voldemortProjectileMesh = new THREE.Mesh(geometry, material);
+
+    voldemortProjectileMesh.position.set(0, 0.5, -3);
 }
 
 
@@ -125,6 +148,7 @@ function createPlane(){
 }
 
 
+// PLAYER
 // Window handler
 function windowListenerHandler(){
     window.addEventListener('keydown', (e) => {
@@ -138,6 +162,7 @@ function windowListenerHandler(){
     })
 }
 
+// Control player keyboard
 function control(){
     // Right
     if((playerControls['KeyA'] || playerControls['ArrowLeft']) && brumbalModel.position.x <= 14){
@@ -173,8 +198,7 @@ function playerShoot(){
     let projectileMeshClone = playerProjectileMesh.clone();
 
     projectileMeshClone.position.x = brumbalModel.position.x;
-    projectileMeshClone.position.y = brumbalModel.position.y;
-    projectileMeshClone.position.z = brumbalModel.position.z;
+    projectileMeshClone.position.z = brumbalModel.position.z + 0.5;
 
     gameScene.add(projectileMeshClone);
 
@@ -184,19 +208,26 @@ function playerShoot(){
 
 // Function to move projectiles
 function updatePlayerProjectiles(){
-    playerProjectiles.forEach((projectile, index) => {
-        projectile.position.z += 0.5;
+    setInterval(() => {
+        playerProjectiles.forEach((projectile, index) => {
+            projectile.position.z += 0.5;
+            projectile.position.y += 0.06;
 
-        if(projectile.position.z >= 0){
-            gameScene.remove(projectile);
-
-            playerProjectiles.splice(index, 1);
-        }
-    })
+            projectile.rotation.x += 0.1;
+            projectile.rotation.y += 0.1;
+            projectile.rotation.z += 0.1;
+    
+            if(projectile.position.z >= 0){
+                gameScene.remove(projectile);
+    
+                playerProjectiles.splice(index, 1);
+            }
+        })
+    }, 10);
 }
 
 // Function to check collision
-function checkPlayerCollision(){
+function checkVoldemortCollision(){
     playerProjectiles.forEach((projectile, index) => {
         if(
             voldemortModel.position.x >= projectile.position.x - 1 &&
@@ -204,13 +235,13 @@ function checkPlayerCollision(){
             voldemortModel.position.z >= projectile.position.z - 1 &&
             voldemortModel.position.z <= projectile.position.z + 1
         ){
-            gameScore -= 10;
-            gameScoreText.innerText = gameScore;
+            playerHealth -= 10;
+            playerHealthText.innerText = playerHealth;
 
             gameScene.remove(projectile);
             playerProjectiles.splice(index, 1);
 
-            if(gameScore <= 0){
+            if(playerHealth <= 0){
                 playerWin();
             }
         }
@@ -225,15 +256,9 @@ function playerWin(){
 
 
 
-function updatePlayer(){
-    control();
-    updatePlayerProjectiles();
-    checkPlayerCollision();
-}
-
-
+// VOLDEMORT
 // Update voldemort position
-let voldemortInterval = 1000;
+let voldemortMoveInterval = 2000;
 
 function voldemortRandomPos(){
     setInterval(() => {
@@ -242,23 +267,88 @@ function voldemortRandomPos(){
         console.log(newCoords);
 
         gsap.to(voldemortModel.position, {
-            duration: 0.4,
+            duration: 0.8,
             x: newCoords
         })
-    }, voldemortInterval);
+    }, voldemortMoveInterval);
 }
 
 function generateRandomCoord(min, max){
     return Math.floor((Math.random() * (max - min + 1)) + min);
 }
 
+// Voldemort shooting
+let voldemortShootInterval = 1000;
+
+function voldemortShoot(){
+    setInterval(() => {
+        let projectileMeshClone = voldemortProjectileMesh.clone();
+
+        projectileMeshClone.position.x = voldemortModel.position.x;
+        projectileMeshClone.position.z = voldemortModel.position.z;
+
+        gameScene.add(projectileMeshClone);
+
+        voldemortProjectiles.push(projectileMeshClone);
+    }, voldemortShootInterval);
+}
+
+// Moove with projectiles
+function updateVoldemortProjectiles(){
+    setInterval(() => {
+        voldemortProjectiles.forEach((projectile, index) => {
+            projectile.position.z -= 0.5;
+
+            if(projectile.position.z <= -14){
+                gameScene.remove(projectile);
+
+                voldemortProjectiles.splice(index, 1);
+            }
+        })
+    }, 10);
+}
+
+function checkPlayerCollision(){
+    voldemortProjectiles.forEach((projectile, index) => {
+        if(
+            brumbalModel.position.x >= projectile.position.x - 1 &&
+            brumbalModel.position.x <= projectile.position.x + 1 &&
+            brumbalModel.position.z >= projectile.position.z - 1 &&
+            brumbalModel.position.z <= projectile.position.z + 1
+        ){
+            voldemortHealth -= 10;
+            voldemortHealthText.innerText = voldemortHealth;
+
+            gameScene.remove(projectile);
+            voldemortProjectiles.splice(index, 1);
+
+            if(voldemortHealth <= 0){
+                voldemortWin();
+            }
+        }
+    })
+}
+
+
+// If voldemort win
+function voldemortWin(){
+    gameSection.classList.add('voldemortWin');
+}
+
+
+
+function updatePlayer(){
+    control();
+    checkVoldemortCollision();
+    checkPlayerCollision();
+}
 
 
 
 // GAME CONTROLS
 let stats;
 function gameControlsInit(){
-    // gameControls.enabled = false;
+    gameControls.enabled = false;
 
     gameControls.addEventListener('change', () => {
         console.log(gameCamera.position);

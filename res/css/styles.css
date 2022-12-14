@@ -419,8 +419,7 @@ p, h1, h2, h3, h4, h5, h6{
 
 /* GAME SECTION */
 .gameSection{
-    width: 100vw;
-    height: 100vh;
+    width: fit-content;
     display: flex;
     flex-direction: column;
     position: absolute;
@@ -429,15 +428,22 @@ p, h1, h2, h3, h4, h5, h6{
     z-index: 10;
     padding: 54px 20px;
 }
-.gameSection.playerWin{
+.gameSection.playerWin,
+.gameSection.voldemortWin{
+    width: 100vw;
+    height: 100vh;
     align-items: center;
     justify-content: center;
     background-color: black;
 }
-.gameSection.playerWin .game__score{
+.gameSection.playerWin .game__score,
+.gameSection.voldemortWin .game__score{
     display: none;
 }
 .gameSection.playerWin .game__win{
+    display: block;
+}
+.gameSection.voldemortWin .game__loose{
     display: block;
 }
 
@@ -445,7 +451,7 @@ p, h1, h2, h3, h4, h5, h6{
     font-size: 30px;
     display: block;
 }
-.game__win{
+.game__win, .game__loose{
     font-size: 40px;
     font-weight: 400;
     color: white;
