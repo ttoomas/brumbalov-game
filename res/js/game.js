@@ -18,6 +18,12 @@ let playerControls = {};
 
 let playerProjectiles = [];
 let playerShooted = false;
+let playerCanShoot = true;
+
+// Things that can change for upgrades
+let shootIntervalTime = 500;        // Player shoot timout
+let voldemortMoveInterval = 2000;   // Voldemort automove time
+let voldemortShootInterval = 1000;  // Voldemort shoot interval
 
 let voldemortProjectiles = [];
 
@@ -75,7 +81,7 @@ async function initGame(){
     updatePlayerProjectiles();
     updateVoldemortProjectiles();
 
-    // voldemortRandomPos();
+    voldemortRandomPos();
 
     animate();
 }
@@ -90,11 +96,10 @@ async function importVoldemortModel(){
     
     gameScene.add(voldemortModel);
 
-    // let intialCoods = generateRandomCoord(-12, 12);
+    let intialCoods = generateRandomCoord(-12, 12);
 
     voldemortModel.scale.set(0.3, 0.3, 0.3);
-    // voldemortModel.position.set(intialCoods, 0, 0);
-    voldemortModel.position.set(0, 0, 0);
+    voldemortModel.position.set(intialCoods, 0, 0);
     voldemortModel.rotation.y = Math.PI;
 }
 
@@ -219,9 +224,13 @@ function control(){
         brumbalModel.position.z += zPos;
     }
 
-    if(playerControls["Space"] && !playerShooted){
+    if(playerControls["Space"] && !playerShooted && playerCanShoot){
         playerShoot();
+
         playerShooted = true;
+        playerCanShoot = false;
+
+        setShootInterval();
     }
 }
 
@@ -234,6 +243,17 @@ function playerShoot(){
     gameScene.add(projectileMeshClone);
 
     playerProjectiles.push(projectileMeshClone);
+}
+
+// Set interval to prevent spamming
+let shootInterval;
+
+function setShootInterval(){
+    clearInterval(shootInterval);
+
+    shootInterval = setInterval(() => {
+        playerCanShoot = true;
+    }, shootIntervalTime);
 }
 
 
@@ -289,13 +309,9 @@ function playerWin(){
 
 // VOLDEMORT
 // Update voldemort position
-let voldemortMoveInterval = 2000;
-
 function voldemortRandomPos(){
     setInterval(() => {
         let newCoords = generateRandomCoord(-12, 12);
-
-        console.log(newCoords);
 
         gsap.to(voldemortModel.position, {
             duration: 0.8,
@@ -310,8 +326,6 @@ function generateRandomCoord(min, max){
 
 
 // Voldemort shooting
-let voldemortShootInterval = 1000;
-
 function voldemortShoot(){
     setInterval(() => {
         let projectileMeshClone = voldemortProjectileMesh.clone();
@@ -385,7 +399,7 @@ function updatePlayer(){
 // GAME CONTROLS
 let stats;
 function gameControlsInit(){
-    // gameControls.enabled = false;
+    gameControls.enabled = false;
 
     gameControls.addEventListener('change', () => {
         console.log(gameCamera.position);
@@ -398,8 +412,8 @@ function gameControlsInit(){
     stats.showPanel(0);
     document.body.appendChild(stats.dom);
 
-    const axesHelper = new THREE.AxesHelper(10);
-    gameScene.add(axesHelper);
+    // const axesHelper = new THREE.AxesHelper(10);
+    // gameScene.add(axesHelper);
 }
 
 // ANIMATE
@@ -407,7 +421,6 @@ function animate(){
     stats.begin();
 
     gameRenderer.render(gameScene, gameCamera);
-    // gameControls.update();
 
     updatePlayer();
 
