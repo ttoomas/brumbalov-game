@@ -13,6 +13,11 @@ const gltfLoader = new GLTFLoader();
 
 let gameControls;
 
+let animateRequestFrame;
+let playerProjectileInterval;
+let voldemortPosInterval;
+let voldemortShootInterval;
+let updateVoldemortProjectilesInterval;
 
 let playerControls = {};
 
@@ -23,20 +28,14 @@ let playerCanShoot = true;
 // Things that can change for upgrades
 let shootIntervalTime = 500;        // Player shoot timout
 let voldemortMoveInterval = 2000;   // Voldemort automove time
-let voldemortShootInterval = 1000;  // Voldemort shoot interval
+let voldemortShootIntervalTime = 1000;  // Voldemort shoot interval
 
 let voldemortProjectiles = [];
 
 
 let player = {
     height: 1.4,
-    turnSpeed: 0.1,
     speed: 0.04,
-    jumpHeight: 0.2,
-    gravity: 0.01,
-    velocity: 0,
-
-    playerJumps: false
 };
 
 const gameSection = document.querySelector('.gameSection');
@@ -52,11 +51,11 @@ initGame();
 
 async function initGame(){
     gameScene = new THREE.Scene();
-    const sceneBackgroundTexture = new THREE.Color('white');
+    const gameSceneBackgroundTexture = new THREE.TextureLoader().load('/images/library.png');
     gameCamera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
     gameRenderer = new THREE.WebGLRenderer({ antialias: true });
 
-    createScene(gameScene, sceneBackgroundTexture, gameCamera, [0, player.height, -13], gameRenderer, gameParent);
+    createScene(gameScene, gameSceneBackgroundTexture, gameCamera, [0, player.height, -13], gameRenderer, gameParent);
 
     gameCamera.lookAt(new THREE.Vector3(0, player.height, 0));
 
@@ -72,18 +71,36 @@ async function initGame(){
     await createVoldemortProjectile();
 
     createPlane();
+}
+
+
+
+// FUNCTION TO START THE GAME
+function startGame(){
+    playerCanShoot = true;
 
     windowListenerHandler();
-    
+
     gameControlsInit();
     voldemortShoot();
-    
+
     updatePlayerProjectiles();
     updateVoldemortProjectiles();
 
     voldemortRandomPos();
 
     animate();
+}
+
+// FUNCTION TO END THE GAME
+function endGame(){
+    cancelAnimationFrame(animateRequestFrame);
+
+    clearInterval(playerProjectileInterval);
+    clearInterval(voldemortPosInterval);
+    clearInterval(voldemortShootInterval);
+    clearInterval(updateVoldemortProjectilesInterval);
+    clearInterval(shootInterval);
 }
 
 
@@ -259,7 +276,7 @@ function setShootInterval(){
 
 // Function to move projectiles
 function updatePlayerProjectiles(){
-    setInterval(() => {
+    playerProjectileInterval = setInterval(() => {
         playerProjectiles.forEach((projectile, index) => {
             projectile.position.z += 0.5;
             projectile.position.y += 0.06;
@@ -310,7 +327,7 @@ function playerWin(){
 // VOLDEMORT
 // Update voldemort position
 function voldemortRandomPos(){
-    setInterval(() => {
+    voldemortPosInterval = setInterval(() => {
         let newCoords = generateRandomCoord(-12, 12);
 
         gsap.to(voldemortModel.position, {
@@ -327,7 +344,7 @@ function generateRandomCoord(min, max){
 
 // Voldemort shooting
 function voldemortShoot(){
-    setInterval(() => {
+    voldemortShootInterval = setInterval(() => {
         let projectileMeshClone = voldemortProjectileMesh.clone();
 
         projectileMeshClone.position.x = voldemortModel.position.x;
@@ -336,12 +353,12 @@ function voldemortShoot(){
         gameScene.add(projectileMeshClone);
 
         voldemortProjectiles.push(projectileMeshClone);
-    }, voldemortShootInterval);
+    }, voldemortShootIntervalTime);
 }
 
 // Moove with projectiles
 function updateVoldemortProjectiles(){
-    setInterval(() => {
+    updateVoldemortProjectilesInterval = setInterval(() => {
         voldemortProjectiles.forEach((projectile, index) => {
             projectile.position.z -= 0.5;
             projectile.position.y -= 0.05;
@@ -399,7 +416,7 @@ function updatePlayer(){
 // GAME CONTROLS
 let stats;
 function gameControlsInit(){
-    gameControls.enabled = false;
+    // gameControls.enabled = false;
 
     gameControls.addEventListener('change', () => {
         console.log(gameCamera.position);
@@ -424,7 +441,15 @@ function animate(){
 
     updatePlayer();
 
-    requestAnimationFrame(animate);
+    animateRequestFrame = requestAnimationFrame(animate);
 
     stats.end();
 }
+
+
+// Just start game
+startGame();
+// setTimeout(() => {
+    
+//     endGame();
+// }, 200);
