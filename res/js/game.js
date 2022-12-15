@@ -50,7 +50,7 @@ async function initGame(){
     gameCamera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
     gameRenderer = new THREE.WebGLRenderer({ antialias: true });
 
-    createScene(gameScene, sceneBackgroundTexture, gameCamera, [0, player.height, -15], gameRenderer, gameParent);
+    createScene(gameScene, sceneBackgroundTexture, gameCamera, [0, player.height, -13], gameRenderer, gameParent);
 
     gameCamera.lookAt(new THREE.Vector3(0, player.height, 0));
 
@@ -63,8 +63,7 @@ async function initGame(){
     await importBrumbalModel();
 
     await createPlayerProjectile();
-
-    createVoldemortProjectile();
+    await createVoldemortProjectile();
 
     createPlane();
 
@@ -76,7 +75,7 @@ async function initGame(){
     updatePlayerProjectiles();
     updateVoldemortProjectiles();
 
-    voldemortRandomPos();
+    // voldemortRandomPos();
 
     animate();
 }
@@ -91,7 +90,10 @@ async function importVoldemortModel(){
     
     gameScene.add(voldemortModel);
 
+    // let intialCoods = generateRandomCoord(-12, 12);
+
     voldemortModel.scale.set(0.3, 0.3, 0.3);
+    // voldemortModel.position.set(intialCoods, 0, 0);
     voldemortModel.position.set(0, 0, 0);
     voldemortModel.rotation.y = Math.PI;
 }
@@ -105,7 +107,7 @@ async function importBrumbalModel(){
 
     gameScene.add(brumbalModel);
 
-    brumbalModel.position.set(0, 0, -14);
+    brumbalModel.position.set(0, 0, -12);
     brumbalModel.scale.set(0.5, 0.5, 0.5);
 }
 
@@ -113,23 +115,25 @@ async function importBrumbalModel(){
 let playerProjectileMesh;
 
 async function createPlayerProjectile(){
-    const playerProjectileGLTF = await gltfLoader.loadAsync('/models/fireball.glb');
+    const playerProjectileGLTF = await gltfLoader.loadAsync('/models/blue_beam.glb');
     playerProjectileMesh = playerProjectileGLTF.scene;
 
-    playerProjectileMesh.position.set(0, 0.5, 0);
-    playerProjectileMesh.scale.set(0.04, 0.04, 0.04);
+    playerProjectileMesh.position.set(0, 0.5, -5);
+    playerProjectileMesh.scale.set(0.15, 0.15, 0.15);
+    playerProjectileMesh.rotation.y = Math.PI;
+    playerProjectileMesh.rotation.x = -0.05;
 }
 
 // Create voldemrot projectile
 let voldemortProjectileMesh;
 
-function createVoldemortProjectile(){
-    const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-    const material = new THREE.MeshPhongMaterial({ color: "violet", wireframe: false });
+async function createVoldemortProjectile(){
+    const voldemortProjectileGLTF = await gltfLoader.loadAsync('/models/red_beam.glb');
+    voldemortProjectileMesh = voldemortProjectileGLTF.scene;
 
-    voldemortProjectileMesh = new THREE.Mesh(geometry, material);
-
-    voldemortProjectileMesh.position.set(0, 0.5, -3);
+    voldemortProjectileMesh.position.set(0, 2, 0);
+    voldemortProjectileMesh.scale.set(0.2, 0.2, 0.2);
+    voldemortProjectileMesh.rotation.x = -0.25;
 }
 
 
@@ -158,7 +162,10 @@ function windowListenerHandler(){
     
     window.addEventListener('keyup', (e) => {
         playerControls[e.code] = false;
-        playerShooted = false;
+
+        if(e.code === 'Space'){
+            playerShooted = false;
+        }
     })
 }
 
@@ -180,6 +187,30 @@ function control(){
     if((playerControls['KeyD'] || playerControls['ArrowRight']) && brumbalModel.position.x >= -14){
         let xPos = Math.sin(gameCamera.rotation.y - Math.PI / 2) * player.speed;
         let zPos = -Math.cos(gameCamera.rotation.y - Math.PI / 2) * player.speed;
+
+        gameCamera.position.x += xPos;
+        gameCamera.position.z += zPos;
+
+        brumbalModel.position.x += xPos;
+        brumbalModel.position.z += zPos;
+    }
+
+    // Move Front
+    if((playerControls['KeyW'] || playerControls['ArrowUp']) && brumbalModel.position.z <= -10){
+        let xPos = Math.sin(gameCamera.rotation.y) * player.speed;
+        let zPos = -Math.cos(gameCamera.rotation.y) * player.speed;
+
+        gameCamera.position.x -= xPos;
+        gameCamera.position.z -= zPos;
+
+        brumbalModel.position.x -= xPos;
+        brumbalModel.position.z -= zPos;
+    }   
+
+    // Move Back
+    if((playerControls['KeyS'] || playerControls['ArrowDown']) && brumbalModel.position.z >= -14){
+        let xPos = Math.sin(gameCamera.rotation.y) * player.speed;
+        let zPos = -Math.cos(gameCamera.rotation.y) * player.speed;
 
         gameCamera.position.x += xPos;
         gameCamera.position.z += zPos;
@@ -213,9 +244,9 @@ function updatePlayerProjectiles(){
             projectile.position.z += 0.5;
             projectile.position.y += 0.06;
 
-            projectile.rotation.x += 0.1;
-            projectile.rotation.y += 0.1;
-            projectile.rotation.z += 0.1;
+            projectile.scale.x += 0.005;
+            projectile.scale.y += 0.005;
+            projectile.scale.z += 0.005;
     
             if(projectile.position.z >= 0){
                 gameScene.remove(projectile);
@@ -274,8 +305,9 @@ function voldemortRandomPos(){
 }
 
 function generateRandomCoord(min, max){
-    return Math.floor((Math.random() * (max - min + 1)) + min);
+    return (Math.random() * (max - min + 1)) + min;
 }
+
 
 // Voldemort shooting
 let voldemortShootInterval = 1000;
@@ -298,6 +330,11 @@ function updateVoldemortProjectiles(){
     setInterval(() => {
         voldemortProjectiles.forEach((projectile, index) => {
             projectile.position.z -= 0.5;
+            projectile.position.y -= 0.05;
+
+            projectile.scale.x -= 0.005;
+            projectile.scale.y -= 0.005;
+            projectile.scale.z -= 0.005;
 
             if(projectile.position.z <= -14){
                 gameScene.remove(projectile);
@@ -348,7 +385,7 @@ function updatePlayer(){
 // GAME CONTROLS
 let stats;
 function gameControlsInit(){
-    gameControls.enabled = false;
+    // gameControls.enabled = false;
 
     gameControls.addEventListener('change', () => {
         console.log(gameCamera.position);
