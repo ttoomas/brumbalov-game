@@ -35,7 +35,7 @@ let voldemortProjectiles = [];
 
 let player = {
     height: 1.4,
-    speed: 0.04,
+    speed: 0.1,
 };
 
 const gameSection = document.querySelector('.gameSection');
@@ -71,6 +71,9 @@ async function initGame(){
     await createVoldemortProjectile();
 
     createPlane();
+
+    // Just start game
+    startGame();
 }
 
 
@@ -445,11 +448,3 @@ function animate(){
 
     stats.end();
 }
-
-
-// Just start game
-startGame();
-// setTimeout(() => {
-    
-//     endGame();
-// }, 200);

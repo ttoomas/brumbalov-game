@@ -428,6 +428,10 @@ p, h1, h2, h3, h4, h5, h6{
     z-index: 10;
     padding: 54px 20px;
 }
+.game__healthBx{
+    background-color: white;
+    padding: 0.5rem 1rem;
+}
 .gameSection.playerWin,
 .gameSection.voldemortWin{
     width: 100vw;
