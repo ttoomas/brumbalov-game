@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-export default function (currentScene, currentSceneBackground, currentCamera, currentCameraPosition, currentRenderer, parentE){
+export default function (currentScene, currentSceneBackground, currentCamera, currentCameraPosition, currentRenderer, lightPosition, parentE){
     currentScene.background = currentSceneBackground;
     
     // Camera
@@ -11,6 +11,7 @@ export default function (currentScene, currentSceneBackground, currentCamera, cu
     // Lights
     const pointLight = new THREE.PointLight(0xffffff);
     pointLight.position.set(5, 50, 50);
+    pointLight.position.set(lightPosition[0], lightPosition[1], lightPosition[2]);
     const ambientLight = new THREE.AmbientLight(0xffffff);
     
     currentScene.add(pointLight, ambientLight);
@@ -20,4 +21,8 @@ export default function (currentScene, currentSceneBackground, currentCamera, cu
     currentRenderer.setSize(window.innerWidth, window.innerHeight);
 
     parentE.appendChild(currentRenderer.domElement);
+
+    // Light position helper
+    // const lightHelper = new THREE.PointLightHelper( pointLight, 5 );
+    // currentScene.add( lightHelper );
 }

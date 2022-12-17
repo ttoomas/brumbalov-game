@@ -5,6 +5,7 @@ import gsap from "gsap";
 import createScene from "./createScene";
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { CustomEase } from "gsap/all";
+import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 
 gsap.registerPlugin(CustomEase);
 
@@ -47,7 +48,7 @@ async function homeSceneInit(){
     homeCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     homeRenderer = new THREE.WebGLRenderer({ antialias: true });
 
-    createScene(homeScene, sceneBackgroundTexture, homeCamera, [6.5, 2, 0.5], homeRenderer, homeParent);
+    createScene(homeScene, sceneBackgroundTexture, homeCamera, [6.5, 2, 0.5], homeRenderer, [5, 50, 50], homeParent);
     
     controlsVar = new OrbitControls(homeCamera, homeRenderer.domElement);
 
@@ -56,12 +57,10 @@ async function homeSceneInit(){
     // Functions
     await importHouseModel();
     await importBoardModel();
-    await importBrumbalModel();
 
     // Change transparent, delete book and text
     updateHomeModel();
     setBoardPosition();
-    setBrumbalPosition();
 
     controlsFunction();
 
@@ -74,10 +73,16 @@ async function homeSceneInit(){
 
 // Import house model
 async function importHouseModel(){
-    const houseGLTF = await gltfLoader.loadAsync('/models/house.glb');
+    const houseGLTF = await gltfLoader.loadAsync('/models/final-dambuldor.glb');
     houseObject = houseGLTF.scene;
-    
+
     homeScene.add(houseObject);
+    
+    mixer = new THREE.AnimationMixer(houseObject);
+
+    houseGLTF.animations.forEach((clip) => {
+        mixer.clipAction(clip).play();
+    })
 }
 
 // Import board model
@@ -88,35 +93,11 @@ async function importBoardModel(){
     homeScene.add(boardObject);
 }
 
-// Import brumbál models
-async function importBrumbalModel(){
-    const brumbalGLBF = await gltfLoader.loadAsync('/models/walking.glb');
-    brumbalObject = brumbalGLBF.scene;
-    
-    homeScene.add(brumbalObject);
-
-
-    mixer = new THREE.AnimationMixer(brumbalObject);
-
-    brumbalGLBF.animations.forEach((clip) => {
-        mixer.clipAction(clip).play();
-        console.log(clip);
-    })
-}
-
 // SET BOARD
 function setBoardPosition(){
     boardObject.position.set(1, 1, 200);
 
     boardObject.rotation.y = Math.PI / 2;
-}
-
-// SET BRUMBAL
-function setBrumbalPosition(){
-    // brumbalObject.position.set(100, 1, 1);
-    brumbalObject.position.set(3, 0, -2);
-    brumbalObject.scale.set(0.5, 0.5, 0.5);
-    brumbalObject.rotation.y = Math.PI / 2;
 }
 
 
@@ -216,7 +197,9 @@ function handleHomeClick(e){
 
     homeRaycaster.setFromCamera(homeMouse, homeCamera);
 
-    let intersects = homeRaycaster.intersectObject(homeScene, true);
+    console.log(homeScene);
+
+    let intersects = homeRaycaster.intersectObject(houseObject, true);
 
     if(intersects.length > 0){
         let object = intersects[0].object;

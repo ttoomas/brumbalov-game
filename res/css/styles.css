@@ -461,3 +461,13 @@ p, h1, h2, h3, h4, h5, h6{
     color: white;
     display: none;
 }
+
+
+/* ENEMY HEALTH */
+.test{
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: red;
+    background-color: white;
+}

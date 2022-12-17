@@ -35,7 +35,8 @@ let voldemortProjectiles = [];
 
 let player = {
     height: 1.4,
-    speed: 0.1,
+    sideSpeed: 0.1,
+    frontSpeed: 0.06
 };
 
 const gameSection = document.querySelector('.gameSection');
@@ -51,11 +52,12 @@ initGame();
 
 async function initGame(){
     gameScene = new THREE.Scene();
-    const gameSceneBackgroundTexture = new THREE.TextureLoader().load('/images/library.png');
+    // const gameSceneBackgroundTexture = new THREE.TextureLoader().load('/images/library.png');
+    const gameSceneBackgroundTexture = new THREE.Color(0x313131);
     gameCamera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
     gameRenderer = new THREE.WebGLRenderer({ antialias: true });
 
-    createScene(gameScene, gameSceneBackgroundTexture, gameCamera, [0, player.height, -13], gameRenderer, gameParent);
+    createScene(gameScene, gameSceneBackgroundTexture, gameCamera, [0, player.height, -13], gameRenderer, [0, 5, -20], gameParent);
 
     gameCamera.lookAt(new THREE.Vector3(0, player.height, 0));
 
@@ -82,6 +84,8 @@ async function initGame(){
 function startGame(){
     playerCanShoot = true;
 
+    createVoldemortHealth();
+
     windowListenerHandler();
 
     gameControlsInit();
@@ -90,7 +94,7 @@ function startGame(){
     updatePlayerProjectiles();
     updateVoldemortProjectiles();
 
-    voldemortRandomPos();
+    // voldemortRandomPos();
 
     animate();
 }
@@ -109,6 +113,7 @@ function endGame(){
 
 // Import voldemort model
 let voldemortModel;
+let voldemortInitialCoords;
 
 async function importVoldemortModel(){
     const voldemortGLTF = await gltfLoader.loadAsync('/models/voldemort.glb');
@@ -116,10 +121,10 @@ async function importVoldemortModel(){
     
     gameScene.add(voldemortModel);
 
-    let intialCoods = generateRandomCoord(-12, 12);
+    voldemortInitialCoords = generateRandomCoord(-12, 12);
 
     voldemortModel.scale.set(0.3, 0.3, 0.3);
-    voldemortModel.position.set(intialCoods, 0, 0);
+    voldemortModel.position.set(voldemortInitialCoords, 0, 0);
     voldemortModel.rotation.y = Math.PI;
 }
 
@@ -163,8 +168,11 @@ async function createVoldemortProjectile(){
 
 
 function createPlane(){
-    const geometry = new THREE.PlaneGeometry(10, 10);
-    const material = new THREE.MeshPhongMaterial({ color: "black", wireframe: false });
+    const geometry = new THREE.PlaneGeometry(15, 10);
+    // const material = new THREE.MeshPhongMaterial({ color: "black", wireframe: false });
+    const texture = new THREE.TextureLoader().load('/images/library.png');
+    const material = new THREE.MeshBasicMaterial({ map: texture });
+    // const material = new THREE.MeshLambertMaterial({color: "orange", transparent: true, opacity: 0});
 
     const plane = new THREE.Mesh(geometry, material);
 
@@ -173,7 +181,53 @@ function createPlane(){
     plane.scale.y = 3;
     plane.receiveShadow = true;
 
+    plane.rotation.z = Math.PI;
+
     gameScene.add(plane);
+}
+
+
+// HEALTH BARS
+// Voldemort Health Bar
+let voldemortHealthBarBg;
+let voldemortHealthBar;
+
+function createVoldemortHealth(){
+    const geometry = new THREE.BoxGeometry(2, 1, 0.5);
+    const material = new THREE.MeshPhongMaterial({ color: "red", wireframe: false });
+    const healtMaterial = new THREE.MeshPhongMaterial({ color: "green", wireframe: false });
+
+    voldemortHealthBarBg = new THREE.Mesh(geometry, material);
+
+    gameScene.add(voldemortHealthBarBg);
+
+    voldemortHealthBarBg.position.set(voldemortInitialCoords, 4, 0);
+
+    // Health bar
+    voldemortHealthBar = new THREE.Mesh(geometry, healtMaterial);
+
+    gameScene.add(voldemortHealthBar);
+
+    voldemortHealthBar.position.set(voldemortInitialCoords, 4, 0);
+
+    voldemortHealthBar.scale.x = 1;
+
+    voldemortHealthBar.scale.x = 0.8;
+    voldemortHealthBar.position.x = ((voldemortInitialCoords * 0.8) - 1);
+
+    // setTimeout(() => {
+    //     console.log('started');
+
+    //     gsap.to(voldemortHealthBar.scale, {
+    //         duration: 2,
+    //         x: 0
+    //     })
+
+    //     gsap.to(voldemortHealthBar.position, {
+    //         duration: 2,
+    //         x: (voldemortInitialCoords - 1)
+    //     })
+    // }, 500);
 }
 
 
@@ -198,8 +252,8 @@ function windowListenerHandler(){
 function control(){
     // Right
     if((playerControls['KeyA'] || playerControls['ArrowLeft']) && brumbalModel.position.x <= 14){
-        let xPos = Math.sin(gameCamera.rotation.y + Math.PI / 2) * player.speed;
-        let zPos = -Math.cos(gameCamera.rotation.y + Math.PI / 2) * player.speed;
+        let xPos = Math.sin(gameCamera.rotation.y + Math.PI / 2) * player.sideSpeed;
+        let zPos = -Math.cos(gameCamera.rotation.y + Math.PI / 2) * player.sideSpeed;
 
         gameCamera.position.x += xPos;
         gameCamera.position.z += zPos;
@@ -210,8 +264,8 @@ function control(){
 
     // Left
     if((playerControls['KeyD'] || playerControls['ArrowRight']) && brumbalModel.position.x >= -14){
-        let xPos = Math.sin(gameCamera.rotation.y - Math.PI / 2) * player.speed;
-        let zPos = -Math.cos(gameCamera.rotation.y - Math.PI / 2) * player.speed;
+        let xPos = Math.sin(gameCamera.rotation.y - Math.PI / 2) * player.sideSpeed;
+        let zPos = -Math.cos(gameCamera.rotation.y - Math.PI / 2) * player.sideSpeed;
 
         gameCamera.position.x += xPos;
         gameCamera.position.z += zPos;
@@ -222,8 +276,8 @@ function control(){
 
     // Move Front
     if((playerControls['KeyW'] || playerControls['ArrowUp']) && brumbalModel.position.z <= -10){
-        let xPos = Math.sin(gameCamera.rotation.y) * player.speed;
-        let zPos = -Math.cos(gameCamera.rotation.y) * player.speed;
+        let xPos = Math.sin(gameCamera.rotation.y) * player.frontSpeed;
+        let zPos = -Math.cos(gameCamera.rotation.y) * player.frontSpeed;
 
         gameCamera.position.x -= xPos;
         gameCamera.position.z -= zPos;
@@ -234,8 +288,8 @@ function control(){
 
     // Move Back
     if((playerControls['KeyS'] || playerControls['ArrowDown']) && brumbalModel.position.z >= -14){
-        let xPos = Math.sin(gameCamera.rotation.y) * player.speed;
-        let zPos = -Math.cos(gameCamera.rotation.y) * player.speed;
+        let xPos = Math.sin(gameCamera.rotation.y) * player.frontSpeed;
+        let zPos = -Math.cos(gameCamera.rotation.y) * player.frontSpeed;
 
         gameCamera.position.x += xPos;
         gameCamera.position.z += zPos;
@@ -298,6 +352,8 @@ function updatePlayerProjectiles(){
 }
 
 // Function to check collision
+let voldemortBarScale = 1;
+
 function checkVoldemortCollision(){
     playerProjectiles.forEach((projectile, index) => {
         if(
@@ -309,11 +365,19 @@ function checkVoldemortCollision(){
             playerHealth -= 10;
             playerHealthText.innerText = playerHealth;
 
+            // Update health bar
+            voldemortBarScale -= 0.1; // TODO - dont write it here
+
+            voldemortHealthBar.scale.x = voldemortBarScale;
+            voldemortHealthBar.position.x = (voldemortInitialCoords - 1);
+
+            // Remove it from screen
             gameScene.remove(projectile);
             playerProjectiles.splice(index, 1);
 
             if(playerHealth <= 0){
                 playerWin();
+                endGame();
             }
         }
     })
@@ -395,6 +459,7 @@ function checkPlayerCollision(){
 
             if(voldemortHealth <= 0){
                 voldemortWin();
+                endGame();
             }
         }
     })
