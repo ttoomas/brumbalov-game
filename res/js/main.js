@@ -5,7 +5,6 @@ import gsap from "gsap";
 import createScene from "./createScene";
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { CustomEase } from "gsap/all";
-import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 
 gsap.registerPlugin(CustomEase);
 
@@ -29,13 +28,14 @@ let homeCamera, homeScene, homeRenderer;
 const gltfLoader = new GLTFLoader();
 
 let houseObject,
-    boardObject,
-    brumbalObject;
+    boardObject;
+    // brumbalObject;
 
 let homeRaycaster = new THREE.Raycaster();
 let homeMouse = new THREE.Vector2();
 
 let mixer, clock;
+let brumbalAnimation = true;
 
 
 // THREE INIT
@@ -57,6 +57,7 @@ async function homeSceneInit(){
     // Functions
     await importHouseModel();
     await importBoardModel();
+    // await importBrumbalModel();
 
     // Change transparent, delete book and text
     updateHomeModel();
@@ -73,16 +74,10 @@ async function homeSceneInit(){
 
 // Import house model
 async function importHouseModel(){
-    const houseGLTF = await gltfLoader.loadAsync('/models/final-dambuldor.glb');
+    const houseGLTF = await gltfLoader.loadAsync('/models/house-with-static-brumbal.glb');
     houseObject = houseGLTF.scene;
 
     homeScene.add(houseObject);
-    
-    mixer = new THREE.AnimationMixer(houseObject);
-
-    houseGLTF.animations.forEach((clip) => {
-        mixer.clipAction(clip).play();
-    })
 }
 
 // Import board model
@@ -92,6 +87,24 @@ async function importBoardModel(){
 
     homeScene.add(boardObject);
 }
+
+// Import brumbals model
+// async function importBrumbalModel(){
+//     const brumbalGLTF = await gltfLoader.loadAsync('/models/animated-brumbal.glb');
+//     brumbalObject = brumbalGLTF.scene;
+
+//     homeScene.add(brumbalObject);
+
+//     brumbalObject.traverse(function(object) {
+//         object.frustumCulled  = false;
+//     })
+
+//     mixer = new THREE.AnimationMixer(brumbalObject);
+
+//     brumbalGLTF.animations.forEach((clip) => {
+//         mixer.clipAction(clip).play();
+//     })
+// }
 
 // SET BOARD
 function setBoardPosition(){
@@ -171,6 +184,9 @@ function bodyMouseMove(){
         if(!activeZoomIn){
             houseObject.rotation.y = moveY;
             houseObject.rotation.z = moveZ;
+
+            // brumbalObject.rotation.y = moveY;
+            // brumbalObject.rotation.z = moveZ;
         }
     })
 }
@@ -181,6 +197,7 @@ let activeVocabulary = false;
 let activeDoor = false;
 let activeArsenal = false;
 let activeCauldron = false;
+let activeBrumbal = false;
 
 let activeBoard = false;
 
@@ -197,9 +214,7 @@ function handleHomeClick(e){
 
     homeRaycaster.setFromCamera(homeMouse, homeCamera);
 
-    console.log(homeScene);
-
-    let intersects = homeRaycaster.intersectObject(houseObject, true);
+    let intersects = homeRaycaster.intersectObject(homeScene, true);
 
     if(intersects.length > 0){
         let object = intersects[0].object;
@@ -213,6 +228,7 @@ function handleHomeClick(e){
         if(activeDoor) activeDoorHandler(object);
         if(activeArsenal) activeArsenalHandler(object);
         if(activeCauldron) activeCauldronHandler(object);
+        if(activeBrumbal) activeBrumbalHandler(object);
 
     
         // Vocabulary table
@@ -368,6 +384,35 @@ function handleHomeClick(e){
                 }
             })
         }
+
+        else if(object.name.includes('dumbledore_static_')){
+            console.log('clicked on brumbal');
+
+            activeBrumbal = true;
+            runningCameraAnimation = true;
+            activeZoomIn = true;
+
+            resetHouseModelRotation();
+
+            gsap.to(homeCamera.position, {
+                duration: 1,
+                x: 4.874892640511396,
+                y: 0.2099456278851775,
+                z: 1.0869296968530078
+            })
+
+            gsap.to(controlsVar.target, {
+                duration: 1,
+                x: 0.24827091173492438,
+                y: 0.18892668074835495,
+                z: -0.040375102900077474,
+                onComplete: function(){
+                    runningCameraAnimation = false;
+
+                    // Add options to select battle from top / third person view
+                }
+            })
+        }
     }
     else{
         resetCameraAndDelete();
@@ -416,6 +461,14 @@ function activeCauldronHandler(object){
     }
 }
 
+// Function Brumbal handler
+function activeBrumbalHandler(object){
+    if(object.name.includes('dumbledore_static_')) return;
+    else{
+        resetCameraAndDelete();
+    }
+}
+
 
 
 // Reset house model rotation
@@ -437,7 +490,7 @@ function checkEscToResetCamera(){
 }
 
 function resetCameraAndDelete(){
-    if(activeVocabulary || activeDoor || activeArsenal || activeCauldron || activeBoard){
+    if(activeVocabulary || activeDoor || activeArsenal || activeCauldron || activeBoard || activeBrumbal){
         // Delete all animations
         gsap.globalTimeline.clear();
         runningCameraAnimation = false;
@@ -465,6 +518,10 @@ function resetCameraAndDelete(){
         else if(activeBoard){
             activeBoard = false;
             resetHomeCameraFromBoard();
+        }
+        else if(activeBrumbal){
+            activeBrumbal = false;
+            resetHomeCamera();
         }
     }
 }
@@ -629,7 +686,7 @@ function animate(){
 let stats;
 
 function controlsFunction(){
-    // controlsVar.enabled = false;
+    controlsVar.enabled = false;
     
     // controlsVar.addEventListener('change', () => {
     //     console.log(homeCamera.position);
