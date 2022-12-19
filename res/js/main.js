@@ -28,14 +28,16 @@ let homeCamera, homeScene, homeRenderer;
 const gltfLoader = new GLTFLoader();
 
 let houseObject,
-    boardObject;
-    // brumbalObject;
+    boardObject,
+    brumbalObject;
 
 let homeRaycaster = new THREE.Raycaster();
 let homeMouse = new THREE.Vector2();
 
 let mixer, clock;
 let brumbalAnimation = true;
+
+let houseModels = [];
 
 
 // THREE INIT
@@ -57,7 +59,7 @@ async function homeSceneInit(){
     // Functions
     await importHouseModel();
     await importBoardModel();
-    // await importBrumbalModel();
+    await importBrumbalModel();
 
     // Change transparent, delete book and text
     updateHomeModel();
@@ -74,10 +76,11 @@ async function homeSceneInit(){
 
 // Import house model
 async function importHouseModel(){
-    const houseGLTF = await gltfLoader.loadAsync('/models/house-with-static-brumbal.glb');
+    const houseGLTF = await gltfLoader.loadAsync('/models/house.glb');
     houseObject = houseGLTF.scene;
 
     homeScene.add(houseObject);
+    houseModels.push(houseObject);
 }
 
 // Import board model
@@ -89,22 +92,23 @@ async function importBoardModel(){
 }
 
 // Import brumbals model
-// async function importBrumbalModel(){
-//     const brumbalGLTF = await gltfLoader.loadAsync('/models/animated-brumbal.glb');
-//     brumbalObject = brumbalGLTF.scene;
+async function importBrumbalModel(){
+    const brumbalGLTF = await gltfLoader.loadAsync('/models/animated-brumbal.glb');
+    brumbalObject = brumbalGLTF.scene;
 
-//     homeScene.add(brumbalObject);
+    homeScene.add(brumbalObject);
+    houseModels.push(homeScene);
 
-//     brumbalObject.traverse(function(object) {
-//         object.frustumCulled  = false;
-//     })
+    brumbalObject.traverse(function(object) {
+        object.frustumCulled  = false;
+    })
 
-//     mixer = new THREE.AnimationMixer(brumbalObject);
+    // mixer = new THREE.AnimationMixer(brumbalObject);
 
-//     brumbalGLTF.animations.forEach((clip) => {
-//         mixer.clipAction(clip).play();
-//     })
-// }
+    // brumbalGLTF.animations.forEach((clip) => {
+    //     mixer.clipAction(clip).play();
+    // })
+}
 
 // SET BOARD
 function setBoardPosition(){
@@ -185,8 +189,8 @@ function bodyMouseMove(){
             houseObject.rotation.y = moveY;
             houseObject.rotation.z = moveZ;
 
-            // brumbalObject.rotation.y = moveY;
-            // brumbalObject.rotation.z = moveZ;
+            brumbalObject.rotation.y = moveY;
+            brumbalObject.rotation.z = moveZ;
         }
     })
 }
@@ -214,205 +218,211 @@ function handleHomeClick(e){
 
     homeRaycaster.setFromCamera(homeMouse, homeCamera);
 
-    let intersects = homeRaycaster.intersectObject(homeScene, true);
+    let intersects = homeRaycaster.intersectObjects(houseModels, true);
+
+    console.log(houseModels);
 
     if(intersects.length > 0){
         let object = intersects[0].object;
 
         console.log(object);
 
+        intersects.forEach((intersect) => {
+            console.log(intersect.object.name);
+        })
+
         // ACTIVE
-        if(runningCameraAnimation) return;
+        // if(runningCameraAnimation) return;
         
-        if(activeVocabulary) activeVocabularyHandler(object);
-        if(activeDoor) activeDoorHandler(object);
-        if(activeArsenal) activeArsenalHandler(object);
-        if(activeCauldron) activeCauldronHandler(object);
-        if(activeBrumbal) activeBrumbalHandler(object);
+        // if(activeVocabulary) activeVocabularyHandler(object);
+        // if(activeDoor) activeDoorHandler(object);
+        // if(activeArsenal) activeArsenalHandler(object);
+        // if(activeCauldron) activeCauldronHandler(object);
+        // if(activeBrumbal) activeBrumbalHandler(object);
 
     
-        // Vocabulary table
-        else if(object.name.includes('Vocabulary_Table_')){
-            console.log('Table');
+        // // Vocabulary table
+        // else if(object.name.includes('Vocabulary_Table_')){
+        //     console.log('Table');
 
-            activeVocabulary = true;
-            runningCameraAnimation = true;
-            activeZoomIn = true;
+        //     activeVocabulary = true;
+        //     runningCameraAnimation = true;
+        //     activeZoomIn = true;
 
-            // Change camera position
-            resetHouseModelRotation();
+        //     // Change camera position
+        //     resetHouseModelRotation();
 
-            gsap.to(homeCamera.position, {
-                duration: 1,
-                x: 2.927868438389019,
-                y: 0.7513829103299781,
-                z: 2.872406515072331
-            })
+        //     gsap.to(homeCamera.position, {
+        //         duration: 1,
+        //         x: 2.927868438389019,
+        //         y: 0.7513829103299781,
+        //         z: 2.872406515072331
+        //     })
 
-            gsap.to(controlsVar.target, {
-                duration: 1,
-                x: 0.5699371461463288,
-                y: -0.6995119320075021,
-                z: 3.390770266589537,
-                onComplete: function(){
-                    runningCameraAnimation = false;
+        //     gsap.to(controlsVar.target, {
+        //         duration: 1,
+        //         x: 0.5699371461463288,
+        //         y: -0.6995119320075021,
+        //         z: 3.390770266589537,
+        //         onComplete: function(){
+        //             runningCameraAnimation = false;
 
-                    // Add book cover
-                    bookParent.add(bookCoverMesh);
-                    gsap.to(bookCoverMesh.material, {
-                        duration: 0.8,
-                        opacity: 1
-                    })
+        //             // Add book cover
+        //             bookParent.add(bookCoverMesh);
+        //             gsap.to(bookCoverMesh.material, {
+        //                 duration: 0.8,
+        //                 opacity: 1
+        //             })
     
-                    // Add book text
-                    bookParent.add(bookTextMesh);
-                    gsap.to(bookTextMesh.material, {
-                        duration: 0.8,
-                        opacity: 1
-                    })
-                }
-            })
-        }
+        //             // Add book text
+        //             bookParent.add(bookTextMesh);
+        //             gsap.to(bookTextMesh.material, {
+        //                 duration: 0.8,
+        //                 opacity: 1
+        //             })
+        //         }
+        //     })
+        // }
 
-        // Doors
-        else if(object.name.includes('Brick_Door_')){
-            console.log('Door');
+        // // Doors
+        // else if(object.name.includes('Brick_Door_')){
+        //     console.log('Door');
 
-            activeDoor = true;
-            runningCameraAnimation = true;
-            activeZoomIn = true;
+        //     activeDoor = true;
+        //     runningCameraAnimation = true;
+        //     activeZoomIn = true;
 
-            // Change Camera position
-            resetHouseModelRotation();
+        //     // Change Camera position
+        //     resetHouseModelRotation();
 
-            gsap.to(homeCamera.position, {
-                duration: 1,
-                x: 1.8561061250509379,
-                y: 0.8746107905845485,
-                z: 0.32270146302434405
-            })
+        //     gsap.to(homeCamera.position, {
+        //         duration: 1,
+        //         x: 1.8561061250509379,
+        //         y: 0.8746107905845485,
+        //         z: 0.32270146302434405
+        //     })
 
-            gsap.to(controlsVar.target, {
-                duration: 1,
-                x: -0.23839009429976987,
-                y: 0.79998877865599,
-                z: 0.3056575530841469,
-                onComplete: function(){
-                    runningCameraAnimation = false;
+        //     gsap.to(controlsVar.target, {
+        //         duration: 1,
+        //         x: -0.23839009429976987,
+        //         y: 0.79998877865599,
+        //         z: 0.3056575530841469,
+        //         onComplete: function(){
+        //             runningCameraAnimation = false;
 
-                    // Add door text
-                    doorTextParent.add(doorTextMesh);
+        //             // Add door text
+        //             doorTextParent.add(doorTextMesh);
         
-                    gsap.to(doorTextMesh.material, {
-                        duration: 0.5,
-                        opacity: 1
-                    })
-                }
-            })
-        }
+        //             gsap.to(doorTextMesh.material, {
+        //                 duration: 0.5,
+        //                 opacity: 1
+        //             })
+        //         }
+        //     })
+        // }
 
-        // Arsenal
-        else if(object.name.includes('Arsenal_Change_')){
-            console.log('Arsenal');
+        // // Arsenal
+        // else if(object.name.includes('Arsenal_Change_')){
+        //     console.log('Arsenal');
 
-            activeArsenal = true;
-            runningCameraAnimation = true;
-            activeZoomIn = true;
+        //     activeArsenal = true;
+        //     runningCameraAnimation = true;
+        //     activeZoomIn = true;
 
-            // Change camera position
-            resetHouseModelRotation();
+        //     // Change camera position
+        //     resetHouseModelRotation();
 
-            gsap.to(homeCamera.position, {
-                duration: 1,
-                x: 2.727204473525794,
-                y: 0.4604903396870391,
-                z: -0.4367519428174377
-            })
+        //     gsap.to(homeCamera.position, {
+        //         duration: 1,
+        //         x: 2.727204473525794,
+        //         y: 0.4604903396870391,
+        //         z: -0.4367519428174377
+        //     })
             
-            gsap.to(controlsVar.target, {
-                duration: 1,
-                x: 0.09592168431359922,
-                y: -0.17092384230219762,
-                z: -0.556754032928711,
-                onComplete: function(){
-                    runningCameraAnimation = false;
+        //     gsap.to(controlsVar.target, {
+        //         duration: 1,
+        //         x: 0.09592168431359922,
+        //         y: -0.17092384230219762,
+        //         z: -0.556754032928711,
+        //         onComplete: function(){
+        //             runningCameraAnimation = false;
 
-                    // Add arsenal text
-                    arsenalTextParent.add(arsenalTextMesh);
+        //             // Add arsenal text
+        //             arsenalTextParent.add(arsenalTextMesh);
         
-                    gsap.to(arsenalTextMesh.material, {
-                        duration: 0.4,
-                        opacity: 1
-                    })
-                }
-            })
-        }
+        //             gsap.to(arsenalTextMesh.material, {
+        //                 duration: 0.4,
+        //                 opacity: 1
+        //             })
+        //         }
+        //     })
+        // }
 
-        // Cauldron
-        else if(object.name.includes('Heal_Cauldron')){
-            console.log('Cauldron');
+        // // Cauldron
+        // else if(object.name.includes('Heal_Cauldron')){
+        //     console.log('Cauldron');
 
-            activeCauldron = true;
-            runningCameraAnimation = true;
-            activeZoomIn = true;
+        //     activeCauldron = true;
+        //     runningCameraAnimation = true;
+        //     activeZoomIn = true;
 
-            // Change Camera position
-            resetHouseModelRotation();
+        //     // Change Camera position
+        //     resetHouseModelRotation();
 
-            gsap.to(homeCamera.position, {
-                duration: 1,
-                x: 1.5537442158098573,
-                y: 0.8886614372300705,
-                z: -2.6065596795355184
-            })
+        //     gsap.to(homeCamera.position, {
+        //         duration: 1,
+        //         x: 1.5537442158098573,
+        //         y: 0.8886614372300705,
+        //         z: -2.6065596795355184
+        //     })
 
-            gsap.to(controlsVar.target, {
-                duration: 1,
-                x: 0.25032504389107,
-                y: 0.31893320797489727,
-                z: -3.1983261882632883,
-                onComplete: function(){
-                    runningCameraAnimation = false;
+        //     gsap.to(controlsVar.target, {
+        //         duration: 1,
+        //         x: 0.25032504389107,
+        //         y: 0.31893320797489727,
+        //         z: -3.1983261882632883,
+        //         onComplete: function(){
+        //             runningCameraAnimation = false;
 
-                    // Add Cauldron text
-                    cauldronTextParent.add(cauldronTextMesh);
+        //             // Add Cauldron text
+        //             cauldronTextParent.add(cauldronTextMesh);
 
-                    gsap.to(cauldronTextMesh.material, {
-                        duration: 0.4,
-                        opacity: 1
-                    })
-                }
-            })
-        }
+        //             gsap.to(cauldronTextMesh.material, {
+        //                 duration: 0.4,
+        //                 opacity: 1
+        //             })
+        //         }
+        //     })
+        // }
 
-        else if(object.name.includes('dumbledore_static_')){
-            console.log('clicked on brumbal');
+        // else if(object.name.includes('dumbledore_static_')){
+        //     console.log('clicked on brumbal');
 
-            activeBrumbal = true;
-            runningCameraAnimation = true;
-            activeZoomIn = true;
+        //     activeBrumbal = true;
+        //     runningCameraAnimation = true;
+        //     activeZoomIn = true;
 
-            resetHouseModelRotation();
+        //     resetHouseModelRotation();
 
-            gsap.to(homeCamera.position, {
-                duration: 1,
-                x: 4.874892640511396,
-                y: 0.2099456278851775,
-                z: 1.0869296968530078
-            })
+        //     gsap.to(homeCamera.position, {
+        //         duration: 1,
+        //         x: 4.874892640511396,
+        //         y: 0.2099456278851775,
+        //         z: 1.0869296968530078
+        //     })
 
-            gsap.to(controlsVar.target, {
-                duration: 1,
-                x: 0.24827091173492438,
-                y: 0.18892668074835495,
-                z: -0.040375102900077474,
-                onComplete: function(){
-                    runningCameraAnimation = false;
+        //     gsap.to(controlsVar.target, {
+        //         duration: 1,
+        //         x: 0.24827091173492438,
+        //         y: 0.18892668074835495,
+        //         z: -0.040375102900077474,
+        //         onComplete: function(){
+        //             runningCameraAnimation = false;
 
-                    // Add options to select battle from top / third person view
-                }
-            })
-        }
+        //             // Add options to select battle from top / third person view
+        //         }
+        //     })
+        // }
     }
     else{
         resetCameraAndDelete();
