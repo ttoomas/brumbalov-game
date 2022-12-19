@@ -97,7 +97,7 @@ async function importBrumbalModel(){
     brumbalObject = brumbalGLTF.scene;
 
     homeScene.add(brumbalObject);
-    houseModels.push(homeScene);
+    houseModels.push(brumbalObject);
 
     brumbalObject.traverse(function(object) {
         object.frustumCulled  = false;
