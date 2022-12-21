@@ -134,6 +134,11 @@ let cauldronTextParent;
 
 let activeZoomIn = false;
 
+let brumbalAniRotY,
+    brumbalAniPosX,
+    brumbalAniPosY,
+    brumbalAniPosZ;
+
 
 function updateHomeModel(){
     // TODO - mesh.parent.name - smaze cely mesh (asi)
@@ -206,6 +211,7 @@ let activeCauldron = false;
 let activeBrumbal = false;
 
 let activeBoard = false;
+let moovingHandsAnimation;
 
 let runningCameraAnimation = false;
 
@@ -232,11 +238,11 @@ function handleHomeClick(e){
         // ACTIVE
         if(runningCameraAnimation) return;
         
-        if(activeVocabulary) activeVocabularyHandler(object);
-        if(activeDoor) activeDoorHandler(object);
-        if(activeArsenal) activeArsenalHandler(object);
-        if(activeCauldron) activeCauldronHandler(object);
-        if(activeBrumbal) activeBrumbalHandler(object);
+        else if(activeVocabulary) activeVocabularyHandler(object);
+        else if(activeDoor) activeDoorHandler(object);
+        else if(activeArsenal) activeArsenalHandler(object);
+        else if(activeCauldron) activeCauldronHandler(object);
+        else if(activeBrumbal) activeBrumbalHandler(object);
 
     
         // Vocabulary table
@@ -398,83 +404,73 @@ function handleHomeClick(e){
 
             // Stop camera moovement
             activeZoomIn = true;
-            resetHouseModelRotation();
+            activeBrumbal = true;
+            runningCameraAnimation = true;
+
+            resetHouseAndBrumbalModelRotation();
 
             // Stop animation
-            brumbalGLTF.animations.forEach((clip) => {
+            brumbalGLTF.animations.forEach((clip, index) => {
                 let action = mixer.clipAction(clip);
 
+                if(index === 1){
+                    moovingHandsAnimation = action;
+                    return;
+                }
+                
                 action.paused = true;
-
-                // setTimeout(() => {
-                //     console.log('play');
-
-                //     action.paused = false;
-                // }, 1000);
             })
 
-            console.log('here');
-
             // Update brumbals rotation, camera position
-            brumbalObject.traverse(function(object){
-                let currentPosition = object;
-
-                // console.log(currentPosition.rotation, currentPosition);
+            brumbalObject.traverse(((object) => {
+                let brumbalTraverse = object;                
 
                 // POSITION
-                if(currentPosition.name === "Empty001"){
-                    currentPosition.rotation.y = 0;
+                if(brumbalTraverse.name === "Empty001"){
+                    brumbalAniRotY = brumbalTraverse.rotation.y;
 
-                    console.log(currentPosition.position);
+                    brumbalAniPosX = brumbalTraverse.position.x;
+                    brumbalAniPosY = brumbalTraverse.position.y;
+                    brumbalAniPosZ = brumbalTraverse.position.z;
 
-                    let currentXPosition = currentPosition.position.x + 1.3;
-                    let currentYPosition = currentPosition.position.y - 0.2;
-                    let currentZPosition = currentPosition.position.z - 0.03;
+                    // Reset brumbals position
+                    gsap.to(brumbalTraverse.rotation, {
+                        duration: 1,
+                        y: Math.PI / -10,
+                    })
 
-                    homeCamera.position.set(currentXPosition, currentYPosition, currentZPosition);
+                    // Position camera
+                    gsap.to(homeCamera.position, {
+                        duration: 1,
+                        x: 4.53707464607984,
+                        y: 0.5787451538866971,
+                        z: 0.0365650252885944
+                    })
 
-                    controlsVar.target.set(-0.05410883817751988, 0.05761027484228322, -0.6413321317351844);
+                    gsap.to(controlsVar.target, {
+                        duration: 1,
+                        x: 0.053123,
+                        y: 0.192154,
+                        z: -0.396614
+                    })
 
-                    console.log(homeCamera.position);
+                    // Position brumbal
+                    gsap.to(brumbalTraverse.position, {
+                        duration: 1,
+                        x: 3.1,
+                        y: 0.8,
+                        z: 0.65,
+                        onComplete: function(){
+                            moovingHandsAnimation.paused = true;
+
+                            runningCameraAnimation = false;
+                        }
+                    })
                 }
 
                 // SCALE, ROTATION
-                // if(currentPosition.name === "Armature"){
-                //     console.log(currentPosition.rotation.y);
-
-                //     // currentPosition.rotation.set(1, 1, 1);
-                //     // currentPosition.rotation.y = Math.PI;
-
-                //     console.log(currentPosition.rotation.y);
-
-                //     // console.log(currentPosition);
-                // }
-            })
-
-            // activeBrumbal = true;
-            // runningCameraAnimation = true;
-            // activeZoomIn = true;
-
-            // resetHouseModelRotation();
-
-            // gsap.to(homeCamera.position, {
-            //     duration: 1,
-            //     x: 4.874892640511396,
-            //     y: 0.2099456278851775,
-            //     z: 1.0869296968530078
-            // })
-
-            // gsap.to(controlsVar.target, {
-            //     duration: 1,
-            //     x: 0.24827091173492438,
-            //     y: 0.18892668074835495,
-            //     z: -0.040375102900077474,
-            //     onComplete: function(){
-            //         runningCameraAnimation = false;
-
-            //         // Add options to select battle from top / third person view
-            //     }
-            // })
+                // if(brumbalTraverse.name === "Armature")
+            }))
         }
     }
     else{
@@ -528,14 +524,25 @@ function activeCauldronHandler(object){
 function activeBrumbalHandler(object){
     if(object.name.includes('dumbledore_static_')) return;
     else{
-        resetCameraAndDelete();
+        // resetCameraAndDelete();
     }
 }
 
 
 
-// Reset house model rotation
+// Reset only house model rotation
 function resetHouseModelRotation(){
+    gsap.to(houseObject.rotation, {
+        duration: 1,
+        x: 0,
+        y: 0,
+        z: 0
+    })
+}
+
+
+// Reset house model and brumbal rotation
+function resetHouseAndBrumbalModelRotation(){
     gsap.to(houseObject.rotation, {
         duration: 1,
         x: 0,
@@ -545,9 +552,8 @@ function resetHouseModelRotation(){
     
     gsap.to(brumbalObject.rotation, {
         duration: 1,
-        x: 0,
-        y: 0,
-        z: 0
+        y: moveY,
+        z: moveZ
     })
 }
 
@@ -592,6 +598,8 @@ function resetCameraAndDelete(){
         else if(activeBrumbal){
             activeBrumbal = false;
             resetHomeCamera();
+            
+            resetBrumbalAni();
         }
     }
 }
@@ -619,6 +627,35 @@ function homeMeshTextDelete(deleteMesh, deleteParent,){
         opacity: 0,
         onComplete: function(){
             deleteParent.remove(deleteMesh);
+        }
+    })
+}
+
+function resetBrumbalAni(){
+    brumbalObject.traverse((object) => {
+        let brumbalTraverse = object;
+
+        if(brumbalTraverse.name === "Empty001"){
+            moovingHandsAnimation.paused = false;
+
+            gsap.to(brumbalTraverse.rotation, {
+                duration: 1,
+                y: brumbalAniRotY
+            })
+
+            gsap.to(brumbalTraverse.position, {
+                duration: 1,
+                x: brumbalAniPosX,
+                y: brumbalAniPosY,
+                z: brumbalAniPosZ,
+                onComplete: function(){
+                    brumbalGLTF.animations.forEach((clip) => {
+                        let action = mixer.clipAction(clip);
+                        
+                        action.paused = false;
+                    })
+                }
+            })
         }
     })
 }
@@ -767,6 +804,9 @@ function controlsFunction(){
     stats = new Stats();
     stats.showPanel(0);
     document.body.appendChild(stats.dom);
+
+    const axesHelper = new THREE.AxesHelper(20);
+    homeScene.add(axesHelper);
 }
 
 
