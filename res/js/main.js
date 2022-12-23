@@ -5,6 +5,7 @@ import gsap from "gsap";
 import createScene from "./createScene";
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { CustomEase } from "gsap/all";
+import { CSS2DRenderer, CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
 
 gsap.registerPlugin(CustomEase);
 
@@ -39,6 +40,8 @@ let brumbalAnimation = true;
 
 let houseModels = [];
 
+let twoDRenderer;
+
 
 // THREE INIT
 let controlsVar;
@@ -52,25 +55,44 @@ async function homeSceneInit(){
 
     createScene(homeScene, sceneBackgroundTexture, homeCamera, [6.5, 2, 0.5], homeRenderer, [5, 50, 50], homeParent);
     
-    controlsVar = new OrbitControls(homeCamera, homeRenderer.domElement);
+    create2DRenderer();
 
     clock = new THREE.Clock();
 
     // Functions
-    await importHouseModel();
+    await importHouseModel(); //this
     await importBoardModel();
-    await importBrumbalModel();
+    await importBrumbalModel(); // this
 
     // Change transparent, delete book and text
-    updateHomeModel();
+    updateHomeModel(); // this
     setBoardPosition();
+
+    // Create buttons for choose battle
+    createBrumbalsBtns();
 
     controlsFunction();
 
-    bodyMouseMove();
+    bodyMouseMove(); // this
+
     animate();
 
     homeRenderer.domElement.addEventListener('click', handleHomeClick, false);
+}
+
+function create2DRenderer(){
+    twoDRenderer = new CSS2DRenderer();
+    twoDRenderer.setSize( window.innerWidth, window.innerHeight );
+
+    twoDRenderer.domElement.style.position = 'absolute';
+    twoDRenderer.domElement.style.top = '0px';
+    twoDRenderer.domElement.style.left = "0px";
+    twoDRenderer.domElement.style.pointerEvents = "none";
+    twoDRenderer.domElement.classList.add('homeTwoDRenderer');
+
+    document.body.appendChild( twoDRenderer.domElement );
+
+    controlsVar = new OrbitControls(homeCamera, homeRenderer.domElement);
 }
 
 
@@ -93,6 +115,7 @@ async function importBoardModel(){
 
 // Import brumbals model
 let brumbalGLTF;
+let brumbalCurrentPos;
 
 async function importBrumbalModel(){
     brumbalGLTF = await gltfLoader.loadAsync('/models/animated-dumbledore.glb');
@@ -102,7 +125,7 @@ async function importBrumbalModel(){
     houseModels.push(brumbalObject);
 
     brumbalObject.traverse(function(object) {
-        object.frustumCulled  = false;
+        object.frustumCulled = false;
     })
 
     mixer = new THREE.AnimationMixer(brumbalObject);
@@ -117,6 +140,31 @@ function setBoardPosition(){
     boardObject.position.set(1, 1, 200);
 
     boardObject.rotation.y = Math.PI / 2;
+}
+
+
+// CREATE BTUTONS FOR CHOOSE BATTLE
+let battleChooseObject;
+
+let battleBtnsHtml = `
+    <button>hello world</button>
+`;
+
+
+function createBrumbalsBtns(){
+    // Create html element
+    const battleChooseHtml = document.createElement('div');
+
+    battleChooseHtml.className = 'battleChoose';
+    battleChooseHtml.style.pointerEvents = "auto";
+    battleChooseHtml.innerHTML = battleBtnsHtml;
+
+    // Create 2d object and add it to scene
+    battleChooseObject = new CSS2DObject(battleChooseHtml);
+
+    battleChooseObject.position.set(0, 1, 0);
+
+    homeScene.add(battleChooseObject);
 }
 
 
@@ -227,8 +275,6 @@ function handleHomeClick(e){
     homeRaycaster.setFromCamera(homeMouse, homeCamera);
 
     let intersects = homeRaycaster.intersectObjects(houseModels, true);
-
-    console.log(houseModels);
 
     if(intersects.length > 0){
         let object = intersects[0].object;
@@ -399,8 +445,23 @@ function handleHomeClick(e){
             })
         }
 
+        // Brumbál
         else if(object.name.includes('Harry_Potter_Albus_Dumbledore001_')){
             console.log('clicked on brumbal');
+
+            brumbalObject.traverse(function(brumObject) {
+                if(brumObject.name === "Empty001"){
+                    brumbalCurrentPos = brumObject.position;
+                }
+            })
+
+            battleChooseObject.position.set(brumbalCurrentPos.x, brumbalCurrentPos.y, brumbalCurrentPos.z);
+            
+
+            
+            
+
+            return;
 
             // Stop camera moovement
             activeZoomIn = true;
@@ -774,10 +835,14 @@ function moveCameraToBoard(){
 
 
 // ANIMATE
+// const testing = document.querySelector('.testing');
+
 function animate(){
     stats.begin();
 
     homeRenderer.render(homeScene, homeCamera);
+    twoDRenderer.render(homeScene, homeCamera);
+
     controlsVar.update();
 
     let delta = clock.getDelta();
@@ -793,13 +858,13 @@ function animate(){
 let stats;
 
 function controlsFunction(){
-    // controlsVar.enabled = false;
+    controlsVar.enabled = false;
     
-    controlsVar.addEventListener('change', () => {
-        console.log(homeCamera.position);
-        console.log('target (lookAt)');
-        console.log(controlsVar.target);
-    })
+    // controlsVar.addEventListener('change', () => {
+    //     console.log(homeCamera.position);
+    //     console.log('target (lookAt)');
+    //     console.log(controlsVar.target);
+    // })
     
     stats = new Stats();
     stats.showPanel(0);
