@@ -60,20 +60,21 @@ async function homeSceneInit(){
     clock = new THREE.Clock();
 
     // Functions
-    await importHouseModel(); //this
+    await importHouseModel();
     await importBoardModel();
-    await importBrumbalModel(); // this
+    await importBrumbalModel();
 
     // Change transparent, delete book and text
-    updateHomeModel(); // this
+    updateHomeModel();
     setBoardPosition();
 
     // Create buttons for choose battle
     createBrumbalsBtns();
+    selectBattleModeHandler();
 
     controlsFunction();
 
-    bodyMouseMove(); // this
+    bodyMouseMove();
 
     animate();
 
@@ -144,19 +145,40 @@ function setBoardPosition(){
 
 
 // CREATE BTUTONS FOR CHOOSE BATTLE
+let battleChooseHtml;
 let battleChooseObject;
 
+let battleChoosePos = {x: null, y: null};
+
 let battleBtnsHtml = `
-    <button>hello world</button>
+    <div class="battle__container">
+        <h2 class="battle__title">Fight against <span class="battle__titleHighlight">Voldemort</span>, the dreaded wizard</h2>
+        <div class="battle__chooseBx">
+            <div class="battle__bx">
+                <button class="battle__btn fps-battle" data-btn-mode="fps">FPS Battle</button>
+                <p class="battle__desc"><span class="battle__descHighlight">First Person View Battle</span> - First person view battle mode is an immersive gameplay mode that puts players in the midst of combat, allowing them to experience the action from a first person perspective.</p>
+            </div>
+            <div class="battle__bx">
+                <button class="battle__btn top-view-battle" data-btn-mode="top-view">Top View Battle</button>
+                <p class="battle__desc"><span class="battle__descHighlight">Top View Battle</span> - In the top-down view game mode, players will experience the action of combat from a bird's eye view. The camera will be positioned above the players, giving them a full view of the battlefield and allowing them to strategize and plan their moves accordingly.</p>
+            </div>
+            <div class="battle__bx">
+                <button class="battle__btn tps-view-battle" data-btn-mode="tps-view">TPS Battle</button>
+                <p class="battle__desc"><span class="battle__descHighlight">Third Person View Battle</span> - In third person view game mode, players will experience the action of the game from a perspective slightly behind and above their character. The camera will be positioned in this way, giving players a full view of their character and their surroundings. </p>
+            </div>
+        </div>
+    </div>
 `;
 
 
 function createBrumbalsBtns(){
     // Create html element
-    const battleChooseHtml = document.createElement('div');
+    battleChooseHtml = document.createElement('div');
 
     battleChooseHtml.className = 'battleChoose';
     battleChooseHtml.style.pointerEvents = "auto";
+    battleChooseHtml.style.height = (window.innerHeight * 0.8) + 'px';
+
     battleChooseHtml.innerHTML = battleBtnsHtml;
 
     // Create 2d object and add it to scene
@@ -165,6 +187,11 @@ function createBrumbalsBtns(){
     battleChooseObject.position.set(0, 1, 0);
 
     homeScene.add(battleChooseObject);
+
+    // Testing
+    // battleChooseHtml.style.setProperty('--battleChooseX', (366));
+
+    // battleChooseHtml.style.width = (947) + 'px';
 }
 
 
@@ -455,13 +482,6 @@ function handleHomeClick(e){
                 }
             })
 
-            battleChooseObject.position.set(brumbalCurrentPos.x, brumbalCurrentPos.y, brumbalCurrentPos.z);
-            
-
-            
-            
-
-            return;
 
             // Stop camera moovement
             activeZoomIn = true;
@@ -517,14 +537,27 @@ function handleHomeClick(e){
 
                     // Position brumbal
                     gsap.to(brumbalTraverse.position, {
-                        duration: 1,
+                        duration: 0.95,
                         x: 3.1,
                         y: 0.8,
                         z: 0.65,
                         onComplete: function(){
-                            moovingHandsAnimation.paused = true;
+                            // Set the battle choose elements
+                            battleChooseObject.position.set(brumbalCurrentPos.x, brumbalCurrentPos.y, brumbalCurrentPos.z);
+                            
+                            setTimeout(() => {
+                                moovingHandsAnimation.paused = true;
+                                runningCameraAnimation = false;
+                                
+                                getBrumbalsPosition(battleChooseHtml.style.transform);
 
-                            runningCameraAnimation = false;
+                                console.log(battleChoosePos);
+
+                                battleChooseHtml.style.setProperty('--battleChooseX', (battleChoosePos.x + 125));
+                                battleChooseHtml.style.width = (window.innerWidth - battleChoosePos.x - 125) + 'px';
+
+                                battleChooseHtml.style.animation = "fadeIn 300ms ease-in-out forwards";
+                            }, 50);
                         }
                     })
                 }
@@ -538,6 +571,19 @@ function handleHomeClick(e){
         resetCameraAndDelete();
     }
 }
+
+
+// Get brumbals position
+function getBrumbalsPosition(battleTransform){
+    let updatedTransform = battleTransform.split('translate(-50%, -50%) ')[1];
+
+    let brumbalX = parseInt(updatedTransform.split('translate(')[1].split(',')[0].split('px')[0]);
+    let brumbalY = parseInt(updatedTransform.split(', ')[1].split('px)')[0]);
+
+    battleChoosePos.x = brumbalX;
+    battleChoosePos.y = brumbalY;
+}
+
 
 
 // Active Vocabulary handler
@@ -585,7 +631,7 @@ function activeCauldronHandler(object){
 function activeBrumbalHandler(object){
     if(object.name.includes('dumbledore_static_')) return;
     else{
-        // resetCameraAndDelete();
+        resetCameraAndDelete();
     }
 }
 
@@ -661,6 +707,12 @@ function resetCameraAndDelete(){
             resetHomeCamera();
             
             resetBrumbalAni();
+
+            battleChooseHtml.style.animation = "fadeOut 300ms ease-in-out forwards";
+
+            setTimeout(() => {
+                battleChooseHtml.style.animation = null;
+            }, 300);
         }
     }
 }
@@ -748,6 +800,36 @@ function resetHomeCamera(){
     activeZoomIn = false;
 }
 
+
+
+// Select battle mode handler
+function selectBattleModeHandler(){
+    const selectModeBtns = battleChooseHtml.querySelectorAll('.battle__btn');
+
+    selectModeBtns.forEach((selectBtn) => {
+        selectBtn.addEventListener('click', () => {
+            let selectBtnType = selectBtn.getAttribute('data-btn-mode');
+
+            switch(selectBtnType){
+                case "fps": {
+                    console.log('first person view mode');
+                    break;
+                }
+                case "top-view": {
+                    console.log('top view mode');
+                    break;
+                }
+                default: {
+                    console.log('third person view mode');
+                }
+            }
+        })
+    })
+}
+
+
+
+// BOARD
 // Function to reset camera after escape from board view
 function resetHomeCameraFromBoard(){
     boardContainer.style.animation = "fadeOut 300ms ease-in-out forwards";
@@ -835,8 +917,6 @@ function moveCameraToBoard(){
 
 
 // ANIMATE
-// const testing = document.querySelector('.testing');
-
 function animate(){
     stats.begin();
 
