@@ -67,6 +67,7 @@ async function homeSceneInit(){
     // Change transparent, delete book and text
     updateHomeModel();
     setBoardPosition();
+    createBoardContent();
 
     // Create buttons for choose battle
     createBrumbalsBtns();
@@ -143,8 +144,27 @@ function setBoardPosition(){
     boardObject.rotation.y = Math.PI / 2;
 }
 
+// CREATE BOARD CONTENT
+let boardContentHtml,
+    boardContentObject;
 
-// CREATE BTUTONS FOR CHOOSE BATTLE
+function createBoardContent(){
+    // create html element
+    boardContentHtml = document.createElement('div');
+
+    boardContentHtml.classList = 'inboard';
+    boardContentHtml.style.pointerEvents = 'auto';
+    boardContentHtml.style.height = "1px";
+    boardContentHtml.style.width = "1px";
+
+    // Create 2d object and add it to scene
+    boardContentObject = new CSS2DObject(boardContentHtml);
+
+    // homeScene.add(boardContentObject);
+}
+
+
+// CREATE BUTTONS FOR CHOOSE BATTLE
 let battleChooseHtml;
 let battleChooseObject;
 

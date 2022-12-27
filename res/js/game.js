@@ -43,6 +43,8 @@ const gameSection = document.querySelector('.gameSection');
 const playerHealthText = document.querySelector('.game__playerHealth');
 const voldemortHealthText = document.querySelector('.game__voldemortHealth');
 
+const brumbalHealthBar = document.querySelector('.brumbal__healthBar');
+
 let playerHealth = 100;
 let voldemortHealth = 100;
 
@@ -193,41 +195,25 @@ let voldemortHealthBarBg;
 let voldemortHealthBar;
 
 function createVoldemortHealth(){
-    const geometry = new THREE.BoxGeometry(2, 1, 0.5);
+    const geometry = new THREE.BoxGeometry(3, 0.7, 0.25);
     const material = new THREE.MeshPhongMaterial({ color: "red", wireframe: false });
     const healtMaterial = new THREE.MeshPhongMaterial({ color: "green", wireframe: false });
 
     voldemortHealthBarBg = new THREE.Mesh(geometry, material);
-
-    gameScene.add(voldemortHealthBarBg);
 
     voldemortHealthBarBg.position.set(voldemortInitialCoords, 4, 0);
 
     // Health bar
     voldemortHealthBar = new THREE.Mesh(geometry, healtMaterial);
 
-    gameScene.add(voldemortHealthBar);
-
     voldemortHealthBar.position.set(voldemortInitialCoords, 4, 0);
-
     voldemortHealthBar.scale.x = 1;
 
-    voldemortHealthBar.scale.x = 0.8;
-    voldemortHealthBar.position.x = ((voldemortInitialCoords * 0.8) - 1);
+    gameScene.add(voldemortHealthBarBg);
+    gameScene.add(voldemortHealthBar);
 
-    // setTimeout(() => {
-    //     console.log('started');
-
-    //     gsap.to(voldemortHealthBar.scale, {
-    //         duration: 2,
-    //         x: 0
-    //     })
-
-    //     gsap.to(voldemortHealthBar.position, {
-    //         duration: 2,
-    //         x: (voldemortInitialCoords - 1)
-    //     })
-    // }, 500);
+    // voldemortHealthBar.scale.x = 0.1;
+    // voldemortHealthBar.position.x = (voldemortInitialCoords - 1.5) + (3 / 2 * 0.1);
 }
 
 
@@ -368,10 +354,17 @@ function checkVoldemortCollision(){
             // Update health bar
             voldemortBarScale -= 0.1; // TODO - dont write it here
 
-            voldemortHealthBar.scale.x = voldemortBarScale;
-            voldemortHealthBar.position.x = (voldemortInitialCoords - 1);
+            gsap.to(voldemortHealthBar.scale, {
+                duration: 0.25,
+                x: voldemortBarScale
+            })
 
-            // Remove it from screen
+            gsap.to(voldemortHealthBar.position, {
+                duration: 0.25,
+                x: (voldemortInitialCoords - 1.5) + (3 / 2 * voldemortBarScale)
+            })
+
+            // Remove projectile from screen
             gameScene.remove(projectile);
             playerProjectiles.splice(index, 1);
 
@@ -443,6 +436,9 @@ function updateVoldemortProjectiles(){
     }, 10);
 }
 
+// Check player collision
+let brumbalBarScale = 1;
+
 function checkPlayerCollision(){
     voldemortProjectiles.forEach((projectile, index) => {
         if(
@@ -456,6 +452,21 @@ function checkPlayerCollision(){
 
             gameScene.remove(projectile);
             voldemortProjectiles.splice(index, 1);
+
+            // HealthBar
+            brumbalBarScale -= 0.1 // TODO - SAME AS VOLDEMORT
+
+            brumbalHealthBar.animate(
+                {
+                    width: (100 * brumbalBarScale) + '%'
+                },
+                {
+                    duration: 250,
+                    fill: "forwards"
+                }
+            )
+            // brumbalHealthBar.style.width = (100 * brumbalBarScale) + '%';
+
 
             if(voldemortHealth <= 0){
                 voldemortWin();
