@@ -1,4 +1,4 @@
-import boardWords from "./wordsBoard.js";
+import boardWords from "../content/wordsBoard.js";
 
 const boardContentBx = document.querySelector('.board__content');
 

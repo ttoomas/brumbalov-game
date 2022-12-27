@@ -2,10 +2,13 @@ import * as THREE from "three";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import gsap from "gsap";
-import createScene from "./createScene";
+import createScene from "../helpers/createScene";
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { CustomEase } from "gsap/all";
 import { CSS2DRenderer, CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
+import { startGame } from "./game.js";
+import { switchGameScene } from "../helpers/switchGameScene.js";
+
 
 gsap.registerPlugin(CustomEase);
 
@@ -839,8 +842,15 @@ function selectBattleModeHandler(){
                     console.log('top view mode');
                     break;
                 }
+                case "tps-view": {
+                    switchGameScene();
+                    startGame();
+                    resetCameraAndDelete();
+
+                    break;
+                }
                 default: {
-                    console.log('third person view mode');
+                    console.error('No battle mode like this');
                 }
             }
         })

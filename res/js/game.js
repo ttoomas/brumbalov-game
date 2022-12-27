@@ -2,16 +2,20 @@ import * as THREE from "three";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import Stats from "three/examples/jsm/libs/stats.module";
-import createScene from "./createScene";
+import createScene from "../helpers/createScene";
 import gsap from "gsap";
+import { switchGameScene } from "../helpers/switchGameScene.js";
 
 // VARIABLES
 const gameParent = document.getElementById('game');
+const gotoHouseBtn = document.querySelector('.game__gotoHouseBtn');
+
 let gameCamera, gameScene, gameRenderer;
 
 const gltfLoader = new GLTFLoader();
 
 let gameControls;
+let gameStarted = false;
 
 let animateRequestFrame;
 let playerProjectileInterval;
@@ -63,7 +67,6 @@ async function initGame(){
 
     gameCamera.lookAt(new THREE.Vector3(0, player.height, 0));
 
-
     gameControls = new OrbitControls(gameCamera, gameRenderer.domElement);
 
 
@@ -76,21 +79,24 @@ async function initGame(){
 
     createPlane();
 
+    createVoldemortHealth();
+
+    windowListenerHandler();
+    gameControlsInit();
+
+    gameRenderer.render(gameScene, gameCamera);
+
     // Just start game
-    startGame();
+    // startGame();
 }
 
 
 
 // FUNCTION TO START THE GAME
-function startGame(){
+export function startGame(){
     playerCanShoot = true;
+    gameStarted = true;
 
-    createVoldemortHealth();
-
-    windowListenerHandler();
-
-    gameControlsInit();
     voldemortShoot();
 
     updatePlayerProjectiles();
@@ -104,6 +110,8 @@ function startGame(){
 // FUNCTION TO END THE GAME
 function endGame(){
     cancelAnimationFrame(animateRequestFrame);
+
+    gameStarted = false;
 
     clearInterval(playerProjectileInterval);
     clearInterval(voldemortPosInterval);
@@ -172,7 +180,9 @@ async function createVoldemortProjectile(){
 function createPlane(){
     const geometry = new THREE.PlaneGeometry(15, 10);
     // const material = new THREE.MeshPhongMaterial({ color: "black", wireframe: false });
-    const texture = new THREE.TextureLoader().load('/images/library.png');
+    const texture = new THREE.TextureLoader().load('/images/library.png', () => {
+        gameRenderer.render(gameScene, gameCamera);
+    });
     const material = new THREE.MeshBasicMaterial({ map: texture });
     // const material = new THREE.MeshLambertMaterial({color: "orange", transparent: true, opacity: 0});
 
@@ -221,11 +231,14 @@ function createVoldemortHealth(){
 // Window handler
 function windowListenerHandler(){
     window.addEventListener('keydown', (e) => {
-        if(e.repeat) return;
+        if(e.repeat || !gameStarted) return;
+
         playerControls[e.code] = true;
     })
     
     window.addEventListener('keyup', (e) => {
+        if(!gameStarted) return;
+
         playerControls[e.code] = false;
 
         if(e.code === 'Space'){
@@ -370,7 +383,6 @@ function checkVoldemortCollision(){
 
             if(playerHealth <= 0){
                 playerWin();
-                endGame();
             }
         }
     })
@@ -379,7 +391,9 @@ function checkVoldemortCollision(){
 
 // If player win the match
 function playerWin(){
-    gameSection.classList.add('playerWin');
+    endGame();
+
+    gameSection.classList.add('playerWin', 'gameIsOver');
 }
 
 
@@ -470,7 +484,6 @@ function checkPlayerCollision(){
 
             if(voldemortHealth <= 0){
                 voldemortWin();
-                endGame();
             }
         }
     })
@@ -479,7 +492,9 @@ function checkPlayerCollision(){
 
 // If voldemort win
 function voldemortWin(){
-    gameSection.classList.add('voldemortWin');
+    endGame();
+
+    gameSection.classList.add('voldemortWin', 'gameIsOver');
 }
 
 
@@ -489,6 +504,15 @@ function updatePlayer(){
     checkVoldemortCollision();
     checkPlayerCollision();
 }
+
+
+
+// Go back to house screen
+gotoHouseBtn.addEventListener('click', () => {
+    if(!gameStarted){
+        switchGameScene();
+    }
+})
 
 
 
