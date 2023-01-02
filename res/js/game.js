@@ -29,6 +29,9 @@ let playerProjectiles = [];
 let playerShooted = false;
 let playerCanShoot = true;
 
+let moovingCamera,
+    slowMoovingCamera;
+
 // Things that can change for upgrades
 let shootIntervalTime = 500;        // Player shoot timout
 let voldemortMoveInterval = 2000;   // Voldemort automove time
@@ -49,8 +52,16 @@ const voldemortHealthText = document.querySelector('.game__voldemortHealth');
 
 const brumbalHealthBar = document.querySelector('.brumbal__healthBar');
 
-let playerHealth = 100;
-let voldemortHealth = 100;
+let playerHealthOnStart = 100;
+let voldemortHealthOnStart = 100;
+
+let playerHealth,
+    voldemortHealth;
+
+// Battle mode variables
+let battleModeCameraPos,
+    battleModeCameraLook,
+    battleModeBrumbalScale;
 
 
 // INIT
@@ -58,12 +69,11 @@ initGame();
 
 async function initGame(){
     gameScene = new THREE.Scene();
-    // const gameSceneBackgroundTexture = new THREE.TextureLoader().load('/images/library.png');
     const gameSceneBackgroundTexture = new THREE.Color(0x313131);
     gameCamera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
     gameRenderer = new THREE.WebGLRenderer({ antialias: true });
 
-    createScene(gameScene, gameSceneBackgroundTexture, gameCamera, [0, player.height, -13], gameRenderer, [0, 5, -20], gameParent);
+    createScene(gameScene, gameSceneBackgroundTexture, gameCamera, [0, 0, 0], gameRenderer, [0, 5, -20], gameParent);
 
     gameCamera.lookAt(new THREE.Vector3(0, player.height, 0));
 
@@ -87,13 +97,66 @@ async function initGame(){
     gameRenderer.render(gameScene, gameCamera);
 
     // Just start game
-    // startGame();
+    // startGame('top-view');
 }
 
 
 
 // FUNCTION TO START THE GAME
-export function startGame(){
+export function startGame(gameModeType){
+    // Reset game variables etc.
+    playerHealth = playerHealthOnStart;
+    voldemortHealth = voldemortHealthOnStart;
+
+
+    // Set game mode variables
+    switch(gameModeType){
+        case "top-view": {
+            // Top view mode
+            battleModeCameraPos = new THREE.Vector3(0, 25, -Math.PI * 4);
+            battleModeCameraLook = new THREE.Vector3(0, 0, 0);
+            battleModeBrumbalScale = 1;
+
+            moovingCamera = true;
+            slowMoovingCamera = true;
+
+            break;
+        }
+        case "ovm-view": {
+            // OverHead view mode
+            battleModeCameraPos = new THREE.Vector3(0, 8.5, -18);
+            battleModeCameraLook = new THREE.Vector3(0, player.height, -5);
+            battleModeBrumbalScale = 0.75;
+
+            moovingCamera = true;
+            slowMoovingCamera = false
+            
+            break;
+        }
+        case "tps-view": {
+            // Third person view mode
+            battleModeCameraPos = new THREE.Vector3(0, player.height, -13);
+            battleModeCameraLook = new THREE.Vector3(0, player.height, 0);
+            battleModeBrumbalScale = 0.5;
+
+            moovingCamera = true;
+            slowMoovingCamera = false
+
+            break;
+        }
+        default: {
+            console.error('No battle mode like this (we are in game)');
+        }
+    }
+
+    // Set variables into game
+    gameCamera.position.set(battleModeCameraPos.x, battleModeCameraPos.y, battleModeCameraPos.z);
+    gameCamera.lookAt(battleModeCameraLook.x, battleModeCameraLook.y, battleModeCameraLook.z);
+
+    brumbalModel.scale.set(battleModeBrumbalScale, battleModeBrumbalScale, battleModeBrumbalScale);
+
+
+    // START the game
     playerCanShoot = true;
     gameStarted = true;
 
@@ -148,7 +211,6 @@ async function importBrumbalModel(){
     gameScene.add(brumbalModel);
 
     brumbalModel.position.set(0, 0, -12);
-    brumbalModel.scale.set(0.5, 0.5, 0.5);
 }
 
 // Create player projectile
@@ -254,11 +316,18 @@ function control(){
         let xPos = Math.sin(gameCamera.rotation.y + Math.PI / 2) * player.sideSpeed;
         let zPos = -Math.cos(gameCamera.rotation.y + Math.PI / 2) * player.sideSpeed;
 
-        gameCamera.position.x += xPos;
-        gameCamera.position.z += zPos;
-
         brumbalModel.position.x += xPos;
         brumbalModel.position.z += zPos;
+        
+        if(moovingCamera && !slowMoovingCamera){
+            gameCamera.position.x += xPos;
+            gameCamera.position.z += zPos;
+        }
+        // Slow camera moovement
+        else if(moovingCamera && slowMoovingCamera){
+            gameCamera.position.x += xPos / 2.5;
+            gameCamera.position.z += zPos / 2.5;
+        }
     }
 
     // Left
@@ -266,11 +335,18 @@ function control(){
         let xPos = Math.sin(gameCamera.rotation.y - Math.PI / 2) * player.sideSpeed;
         let zPos = -Math.cos(gameCamera.rotation.y - Math.PI / 2) * player.sideSpeed;
 
-        gameCamera.position.x += xPos;
-        gameCamera.position.z += zPos;
-
         brumbalModel.position.x += xPos;
         brumbalModel.position.z += zPos;
+        
+        if(moovingCamera && !slowMoovingCamera){
+            gameCamera.position.x += xPos;
+            gameCamera.position.z += zPos;
+        }
+        // Slow camera moovement
+        else if(moovingCamera && slowMoovingCamera){
+            gameCamera.position.x += xPos / 2.5;
+            gameCamera.position.z += zPos / 2.5;
+        }
     }
 
     // Move Front
@@ -278,11 +354,18 @@ function control(){
         let xPos = Math.sin(gameCamera.rotation.y) * player.frontSpeed;
         let zPos = -Math.cos(gameCamera.rotation.y) * player.frontSpeed;
 
-        gameCamera.position.x -= xPos;
-        gameCamera.position.z -= zPos;
-
         brumbalModel.position.x -= xPos;
         brumbalModel.position.z -= zPos;
+        
+        if(moovingCamera && !slowMoovingCamera){
+            gameCamera.position.x -= xPos;
+            gameCamera.position.z -= zPos;
+        }
+        // Slow camera moovement
+        else if(moovingCamera && slowMoovingCamera){
+            gameCamera.position.x -= xPos / 2.5;
+            gameCamera.position.z -= zPos / 2.5;
+        }
     }   
 
     // Move Back
@@ -290,14 +373,22 @@ function control(){
         let xPos = Math.sin(gameCamera.rotation.y) * player.frontSpeed;
         let zPos = -Math.cos(gameCamera.rotation.y) * player.frontSpeed;
 
-        gameCamera.position.x += xPos;
-        gameCamera.position.z += zPos;
-
         brumbalModel.position.x += xPos;
         brumbalModel.position.z += zPos;
+        
+        if(moovingCamera && !slowMoovingCamera){
+            gameCamera.position.x += xPos;
+            gameCamera.position.z += zPos;
+        }
+        // Slow camera moovement
+        else if(moovingCamera && slowMoovingCamera){
+            gameCamera.position.x += xPos / 2.5;
+            gameCamera.position.z += zPos / 2.5;
+        }
     }
 
     if(playerControls["Space"] && !playerShooted && playerCanShoot){
+        console.log('shoted');
         playerShoot();
 
         playerShooted = true;

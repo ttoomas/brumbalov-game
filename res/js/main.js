@@ -178,8 +178,8 @@ let battleBtnsHtml = `
         <h2 class="battle__title">Fight against <span class="battle__titleHighlight">Voldemort</span>, the dreaded wizard</h2>
         <div class="battle__chooseBx">
             <div class="battle__bx">
-                <button class="battle__btn fps-battle" data-btn-mode="fps">FPS Battle</button>
-                <p class="battle__desc"><span class="battle__descHighlight">First Person View Battle</span> - First person view battle mode is an immersive gameplay mode that puts players in the midst of combat, allowing them to experience the action from a first person perspective.</p>
+                <button class="battle__btn fps-battle" data-btn-mode="ovm-view">OVM View Battle</button>
+                <p class="battle__desc"><span class="battle__descHighlight">Over-Head View Battle</span> - In the Overhead view battle mode, players will experience a gameplay from a bird's eye view of the action, allowing them to strategize and make tactical decisions as they fight. With the camera positioned above the game world, players can see the entire battlefield.</p>
             </div>
             <div class="battle__bx">
                 <button class="battle__btn top-view-battle" data-btn-mode="top-view">Top View Battle</button>
@@ -833,26 +833,9 @@ function selectBattleModeHandler(){
         selectBtn.addEventListener('click', () => {
             let selectBtnType = selectBtn.getAttribute('data-btn-mode');
 
-            switch(selectBtnType){
-                case "fps": {
-                    console.log('first person view mode');
-                    break;
-                }
-                case "top-view": {
-                    console.log('top view mode');
-                    break;
-                }
-                case "tps-view": {
-                    switchGameScene();
-                    startGame();
-                    resetCameraAndDelete();
-
-                    break;
-                }
-                default: {
-                    console.error('No battle mode like this');
-                }
-            }
+            switchGameScene();
+            startGame(selectBtnType);
+            resetCameraAndDelete();
         })
     })
 }
