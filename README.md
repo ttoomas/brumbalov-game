@@ -1,6 +1,6 @@
 # BRUMBÁLOV (DUMBLEDORE) GAME
 
-## Status: TPS Battle Mode working 
+## Status: All game mode working 
 
 ---
 

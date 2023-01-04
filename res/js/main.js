@@ -307,6 +307,7 @@ let activeDoor = false;
 let activeArsenal = false;
 let activeCauldron = false;
 let activeBrumbal = false;
+let activeGameWindow = false;
 
 let activeBoard = false;
 let moovingHandsAnimation;
@@ -696,7 +697,7 @@ function checkEscToResetCamera(){
 }
 
 function resetCameraAndDelete(){
-    if(activeVocabulary || activeDoor || activeArsenal || activeCauldron || activeBoard || activeBrumbal){
+    if(activeVocabulary || activeDoor || activeArsenal || activeCauldron || activeBoard || activeGameWindow || activeBrumbal){
         // Delete all animations
         gsap.globalTimeline.clear();
         runningCameraAnimation = false;
@@ -724,6 +725,17 @@ function resetCameraAndDelete(){
         else if(activeBoard){
             activeBoard = false;
             resetHomeCameraFromBoard();
+        }
+        else if(activeGameWindow){
+            activeGameWindow = false;
+
+            resetHomeCamera();
+
+            battleChooseHtml.style.animation = "fadeOut 300ms ease-in-out forwards";
+
+            setTimeout(() => {
+                battleChooseHtml.style.animation = null;
+            }, 300);
         }
         else if(activeBrumbal){
             activeBrumbal = false;
@@ -831,12 +843,34 @@ function selectBattleModeHandler(){
 
     selectModeBtns.forEach((selectBtn) => {
         selectBtn.addEventListener('click', () => {
+            activeBrumbal = false;
+            activeGameWindow = true;
+
             let selectBtnType = selectBtn.getAttribute('data-btn-mode');
 
             switchGameScene();
             startGame(selectBtnType);
             resetCameraAndDelete();
+
+            // Stop brumbals animation
+            brumbalGLTF.animations.forEach((clip) => {
+                let action = mixer.clipAction(clip);
+
+                action.reset();
+                action.time = 3;
+                action.paused = true;
+            })
         })
+    })
+}
+
+
+// EXPORT FUNCTION TO START BRUMBALS ANIMATION
+export function startBrumbalAnimation(){
+    brumbalGLTF.animations.forEach((clip) => {
+        let action = mixer.clipAction(clip);
+
+        action.paused = false;
     })
 }
 

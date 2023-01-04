@@ -209,6 +209,21 @@ function resetGame(){
 
     // Reset animation frame
     endGameAnimationFrame = false;
+
+    // Reset projectiles
+    voldemortProjectiles.forEach((projectile) => {
+        gameScene.remove(projectile);
+    })
+
+    playerProjectiles.forEach((projectile) => {
+        gameScene.remove(projectile);
+    })
+    
+    voldemortProjectiles = [];
+    playerProjectiles = [];
+
+    // Reset player moovements
+    playerControls = {};
 }
 
 
@@ -415,7 +430,6 @@ function control(){
     }
 
     if(playerControls["Space"] && !playerShooted && playerCanShoot){
-        console.log('shoted');
         playerShoot();
 
         playerShooted = true;
@@ -499,8 +513,6 @@ function checkVoldemortCollision(){
             // Remove projectile from screen
             gameScene.remove(projectile);
             playerProjectiles.splice(index, 1);
-
-            console.log(playerHealth);
 
             if(playerHealth <= 0){
                 playerWin();
