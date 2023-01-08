@@ -672,17 +672,25 @@ p, h1, h2, h3, h4, h5, h6{
     flex-direction: column;
     width: calc(100% - 525px);
     height: 100%;
-    padding: 50px 20px;
+    padding: 50px 20px 50px 100px;
     background-color: black;
     color: white;
 }
-.delay__leaveBx{
+.delay__topBx{
     display: flex;
-    justify-content: space-around;
     align-items: center;
+    justify-content: space-between;
+}
+.delay__currCrystals{
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    column-gap: 4px;
+    font-size: 20px;
 }
 .delay__leaveBtn{
     padding: 8px 20px;
+    margin-right: 50px;
     font-size: 17px;
     background-color: black;
     color: white;
@@ -725,7 +733,7 @@ p, h1, h2, h3, h4, h5, h6{
     display: flex;
     flex-direction: column;
     overflow: auto;
-    row-gap: 40px;
+    row-gap: 54px;
 }
 /* Custom scrollbar */
 .delay__content::-webkit-scrollbar{
@@ -743,12 +751,16 @@ p, h1, h2, h3, h4, h5, h6{
 .delay__bx{
     display: flex;
     flex-direction: row;
-    justify-content: center;
     column-gap: 32px;
 }
-.delay__image{
+.delay__imgBx{
     width: 200px;
-    height: 206px;
+    height: 196px;
+    display: flex;
+}
+.delay__img{
+    width: 200px;
+    height: 196px;
     object-fit: cover;
     object-position: center center;
     border-radius: 30px;
@@ -767,7 +779,7 @@ p, h1, h2, h3, h4, h5, h6{
     font-size: 18px;
     font-weight: 300;
     line-height: 1.4;
-    margin-top: 9px;
+    margin-block: 9px 6px;
 }
 .delay__bottom{
     display: flex;
@@ -787,7 +799,7 @@ p, h1, h2, h3, h4, h5, h6{
 .delay__prize.prizeRed{
     color: #ff1b1b;
 }
-.delay__prize::before{
+.prizeCrystal::before{
     content: '';
     display: block;
     width: 32px;
@@ -870,16 +882,11 @@ p, h1, h2, h3, h4, h5, h6{
 .delay__stat.statRed{
     color: #ff1b1b;
 }
-.delay__stat.statRed::before{
-    content: '-';
-    margin-right: 2px;
-}
 .delay__stat.statGreen{
     color: #2bd82b;
 }
-.delay__stat.statGreen::before{
-    content: '+';
-    margin-right: 2px;
+.delay__stat.statYellow{
+    color: #e8e83c;
 }
 .delay__stat.statGreen::after{
     content: '';    
@@ -891,6 +898,11 @@ p, h1, h2, h3, h4, h5, h6{
     height: 1px;
     background-color: #2bd82b;
 }
-.delay__stat.statYellow{
-    color: #e8e83c;
+.delay__stat.statMinus::before{
+    content: '-';
+    margin-right: 2px;
+}
+.delay__stat.statPlus::before{
+    content: '+';
+    margin-right: 2px;
 }

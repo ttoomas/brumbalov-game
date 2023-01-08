@@ -50,6 +50,20 @@ let twoDRenderer;
 
 let activeUpgradeDelay = false;
 
+let crystals = 100000;
+let prizes = {
+    delay: {
+        brumbalFiringDelay: 20,
+        voldemortFiringDelay: 30,
+        voldemortMoveInterval: 25
+    }
+}
+
+// GAME VARIABLES
+let shootIntervalTime = 500;        // Player shoot timout - UPGRADE
+let voldemortShootIntervalTime = 1000;  // Voldemort shoot interval - UPGRADE
+let voldemortMoveInterval = 2000;   // Voldemort automove time
+
 
 // THREE INIT
 let controlsVar;
@@ -88,6 +102,8 @@ async function homeSceneInit(){
     animate();
 
     leaveFromUpgradeWeaponsDelay();
+    buyUpgradeDelay();
+
 
     homeRenderer.domElement.addEventListener('click', handleHomeClick, false);
     
@@ -863,7 +879,7 @@ function selectBattleModeHandler(){
             let selectBtnType = selectBtn.getAttribute('data-btn-mode');
 
             switchGameScene();
-            startGame(selectBtnType);
+            startGame(selectBtnType, shootIntervalTime, voldemortMoveInterval, voldemortShootIntervalTime);
             resetCameraAndDelete();
 
             // Stop brumbals animation
@@ -975,10 +991,10 @@ function moveCameraToBoard(){
 
 // UPGRADES HANDLERS
 const upgradeWeaponsDelay = document.querySelector('.upgrade__weaponDelay');
+const upgradeDelayBuyBtn = document.querySelectorAll('.delay__buyBtn');
 let questionMarkCanvas;
 
 function upgradeWeaponsDoor(){
-    activeDoor = false;
     activeUpgradeDelay = true;
 
     stopBrumbalWalking();
@@ -987,6 +1003,70 @@ function upgradeWeaponsDoor(){
     questionMarkCanvas.style.display = "none";
 
     resetHomeCameraWithoutAnimation();
+    homeMeshTextDelete(doorTextMesh, doorTextParent);
+
+    activeDoor = false;
+}
+
+// Buy upgrade delay
+const delayCurrCrystals = document.querySelector('.delay__currCrystals');
+const brumbalShootDelayText = document.querySelector('.brumbalShootDelay');
+const voldemortShootIntervalText = document.querySelector('.voldemortShootInterval');
+const voldemortMoveIntervalText = document.querySelector('.voldemortMoveInterval');
+
+function buyUpgradeDelay(){
+    upgradeDelayBuyBtn.forEach((upgradeBtn) => {
+        upgradeBtn.addEventListener('click', () => {
+            if(activeUpgradeDelay){
+                let currentUpgradeType = upgradeBtn.getAttribute('data-upgrade-delay');
+
+                if(crystals >= prizes.delay[currentUpgradeType]){
+                    let minusCrystals = Math.round(prizes.delay[currentUpgradeType] / 6);
+                    const currentUpgradePrizeText = upgradeBtn.parentElement.parentElement.querySelector('.delay__prize');
+
+                    switch(currentUpgradeType){
+                        case "brumbalFiringDelay": {
+                            if(shootIntervalTime > 0){
+                                prizes.delay[currentUpgradeType] += minusCrystals;
+                                crystals -= minusCrystals;
+                                shootIntervalTime -= 10;
+    
+                                currentUpgradePrizeText.innerText = prizes.delay[currentUpgradeType];
+                                brumbalShootDelayText.innerText = shootIntervalTime;
+                                delayCurrCrystals.innerText = crystals;
+                            }
+
+                            break;
+                        }
+                        case "voldemortFiringDelay": {
+                            prizes.delay[currentUpgradeType] += minusCrystals;
+                            crystals -= minusCrystals;
+                            voldemortShootIntervalTime += 10;
+
+                            currentUpgradePrizeText.innerText = prizes.delay[currentUpgradeType];
+                            voldemortShootIntervalText.innerText = voldemortShootIntervalTime;
+                            delayCurrCrystals.innerText = crystals;
+                                
+                            break;
+                        }
+                        case "voldemortMoveInterval": {
+                            prizes.delay[currentUpgradeType] += minusCrystals;
+                            crystals -= minusCrystals;
+                            voldemortMoveInterval += 15;
+
+                            currentUpgradePrizeText.innerText = prizes.delay[currentUpgradeType];
+                            voldemortMoveIntervalText.innerText = voldemortMoveInterval;
+                            delayCurrCrystals.innerText = crystals;
+
+                            break;
+                        }
+
+                        default: console.error('wrong upgrade delay type');
+                    }
+                }
+            }
+        })
+    })
 }
 
 
@@ -996,6 +1076,8 @@ const upgradeDelayLeaveBtn = document.querySelector('.delay__leaveBtn');
 function leaveFromUpgradeWeaponsDelay(){
     upgradeDelayLeaveBtn.addEventListener('click', () => {
         if(activeUpgradeDelay){
+            activeUpgradeDelay = false;
+
             startBrumbalWalking();
 
             upgradeWeaponsDelay.style.display = "none";

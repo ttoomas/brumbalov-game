@@ -35,12 +35,11 @@ let moovingCamera,
 let endGameAnimationFrame = false;
 
 // Things that can change for upgrades
-let shootIntervalTime = 500;        // Player shoot timout - UPGRADE
-let voldemortMoveInterval = 2000;   // Voldemort automove time
-let voldemortShootIntervalTime = 1000;  // Voldemort shoot interval - UPGRADE
+let shootIntervalTime;        // Player shoot timout - UPGRADE
+let voldemortMoveInterval;   // Voldemort automove time
+let voldemortShootIntervalTime;  // Voldemort shoot interval - UPGRADE
 
 let voldemortProjectiles = [];
-
 
 let player = {
     height: 1.4,
@@ -106,7 +105,11 @@ async function initGame(){
 
 
 // FUNCTION TO START THE GAME
-export function startGame(gameModeType){
+export function startGame(gameModeType, shootIntervalTimeIm, voldemortMoveIntervalIm, voldemortShootIntervalTimeIm){
+    shootIntervalTime = shootIntervalTimeIm;
+    voldemortMoveInterval = voldemortMoveIntervalIm;
+    voldemortShootIntervalTime = voldemortShootIntervalTimeIm;
+
     // Reset game variables etc.
     resetGame();
 
@@ -167,7 +170,7 @@ export function startGame(gameModeType){
     updatePlayerProjectiles();
     updateVoldemortProjectiles();
 
-    // voldemortRandomPos();
+    voldemortRandomPos();
 
     animate();
 }

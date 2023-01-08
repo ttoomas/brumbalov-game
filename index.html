@@ -189,31 +189,78 @@
     <section class="upgrade__weaponDelay">
         <div class="delay__brumbalImg"></div>
         <div class="delay__container">
-            <div class="delay__leaveBx">
+            <div class="delay__topBx">
+                <p class="delay__currCrystals prizeCrystal">100000</p>
                 <h2 class="delay__title">Upgrade Weapons Delay</h2>
                 <button class="delay__leaveBtn">Leave</button>
             </div>
             <div class="delay__currStatsBx">
-                <p class="delay__currStat">10 HP</p> 
-                <p class="delay__currStat">5 Speed</p>
-                <p class="delay__currStat">55 Hit</p>
+                <p class="delay__currStat">Brumbál Shoot Delay <span class="brumbalShootDelay">500</span>ms</p> 
+                <p class="delay__currStat">Voldemort Shoot Interval <span class="voldemortShootInterval">1000</span>ms</p>
+                <p class="delay__currStat">Voldemort Move Interval <span class="voldemortMoveInterval">2000</span>ms</p>
             </div>
             <div class="delay__content">
                 <div class="delay__bx">
-                    <img src="/images/placeholder.png" alt="" class="delay__image" draggable="false">
+                    <div class="delay__imgBx">
+                        <img src="/images/blue-beam.png" alt="" class="delay__img" draggable="false">
+                    </div>
                     <div class="delay__textBx">
-                        <h3 class="delay__subtitle">Upgrade weapon delay</h3>
-                        <p class="delay__text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Nisi dolorem, harum ad deleniti natus culpa?</p>
+                        <h3 class="delay__subtitle">Shorter firing delay of Brumbál</h3>
+                        <p class="delay__text">Brumbál has a shorter firing delay, allowing him to attack more frequently.</p>
                         <div class="delay__bottom">
-                            <p class="delay__prize prizeRed">200</p>
+                            <p class="delay__prize prizeCrystal">20</p>
                             <div class="delay__buyBtnBx">
-                                <button class="delay__buyBtn" data-upgrade-delay="weapon">Buy</button>
+                                <button class="delay__buyBtn" data-upgrade-delay="brumbalFiringDelay">Buy</button>
                                 <span class="delay__btnLine"></span>
                             </div>
                             <div class="delay__stats">
-                                <p class="delay__stat statRed">10 HP</p>
-                                <p class="delay__stat statGreen">5 Speed</p>
-                                <p class="delay__stat statYellow">55 Hit</p>
+                                <p class="delay__stat statYellow">10 HP</p>
+                                <p class="delay__stat statGreen statMinus">10ms Speed</p>
+                                <p class="delay__stat statYellow">1 Hit</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="delay__bx">
+                    <div class="delay__imgBx">
+                        <img src="/images/red-beam.png" alt="" class="delay__img" draggable="false">
+                    </div>
+                    <div class="delay__textBx">
+                        <h3 class="delay__subtitle">Longer firing delay of Voldemort</h3>
+                        <p class="delay__text">Voldemort has a longer firing delay, causing him to attack less frequently.</p>
+                        <div class="delay__bottom">
+                            <p class="delay__prize prizeCrystal">30</p>
+                            <div class="delay__buyBtnBx">
+                                <button class="delay__buyBtn" data-upgrade-delay="voldemortFiringDelay">Buy</button>
+                                <span class="delay__btnLine"></span>
+                            </div>
+                            <div class="delay__stats">
+                                <p class="delay__stat statYellow">10 HP</p>
+                                <p class="delay__stat statGreen statMinus">10ms Shoot Speed</p>
+                                <p class="delay__stat statYellow">1 Hit</p>
+                                <p class="delay__stat statYellow">1 Move Speed</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="delay__bx">
+                    <div class="delay__imgBx">
+                        <img src="/images/voldemort-art.png" alt="" class="delay__img" draggable="false">
+                    </div>
+                    <div class="delay__textBx">
+                        <h3 class="delay__subtitle">Longer interval for Voldemort to move</h3>
+                        <p class="delay__text">Voldemort has a longer interval between movements, causing him to move less frequently.</p>
+                        <div class="delay__bottom">
+                            <p class="delay__prize prizeCrystal">25</p>
+                            <div class="delay__buyBtnBx">
+                                <button class="delay__buyBtn" data-upgrade-delay="voldemortMoveInterval">Buy</button>
+                                <span class="delay__btnLine"></span>
+                            </div>
+                            <div class="delay__stats">
+                                <p class="delay__stat statYellow">10 HP</p>
+                                <p class="delay__stat statYellow">5ms Shoot Speed</p>
+                                <p class="delay__stat statYellow">1 Hit</p>
+                                <p class="delay__stat statGreen statPlus">15ms Move Speed</p>
                             </div>
                         </div>
                     </div>
