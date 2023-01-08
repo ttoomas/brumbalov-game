@@ -1,4 +1,6 @@
 import { startBrumbalAnimation } from "../js/main.js";
+import { startAnimationLoop as startHomeAnimationLoop } from "../js/main.js";
+
 
 export function switchGameScene(){
     const home = document.getElementById('home');
@@ -19,8 +21,10 @@ export function switchGameScene(){
         brumbalHealthBar.style.display = "block";
     }
     else{
+        
+        startHomeAnimationLoop();
         startBrumbalAnimation();
-
+        
         home.style.display = "block";
         game.style.display = "none";
 

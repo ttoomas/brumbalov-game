@@ -644,3 +644,223 @@ p, h1, h2, h3, h4, h5, h6{
 .game{
     display: none;
 }
+
+
+/* UPGRADES */
+.upgrade__weaponDelay{
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: flex-end;
+    display: none;
+}
+.delay__container{
+    display: flex;
+    flex-direction: column;
+    width: calc(100% - 430px);
+    height: 100%;
+    padding: 50px 20px;
+    background-color: black;
+    color: white;
+}
+.delay__title{
+    font-size: 42px;
+    font-weight: 600;
+    text-align: center;
+    color: transparent;
+    -webkit-text-stroke: 1px white;
+}
+.delay__currStatsBx{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 36px;
+    column-gap: 16px;
+}
+.delay__currStat{
+    font-size: 18px;
+    font-weight: 300;
+    color: white;
+    border: 2px solid #e8e83c;
+    border-radius: 5px;
+    padding: 5px 18px;
+    transition: color 200ms ease-in-out;
+    cursor: pointer;
+}
+.delay__currStat:hover{
+    color: #e8e83c;
+}
+.delay__content{
+    margin-top: 60px;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    row-gap: 40px;
+}
+/* Custom scrollbar */
+.delay__content::-webkit-scrollbar{
+    width: 8px;
+}
+.delay__content::-webkit-scrollbar-track{
+    background-color: #393939;
+    border-radius: 12px;
+}
+.delay__content::-webkit-scrollbar-thumb{
+    background-color: #b3b344;
+    border-radius: 12px;
+}
+
+.delay__bx{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    column-gap: 32px;
+}
+.delay__image{
+    width: 200px;
+    height: 208px;
+    object-fit: cover;
+    object-position: center center;
+    border-radius: 30px;
+}
+.delay__textBx{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px 30px 20px 0px;
+}
+.delay__subtitle{
+    font-size: 30px;
+    font-weight: 400;
+}
+.delay__text{
+    font-size: 18px;
+    font-weight: 300;
+    line-height: 1.4;
+    margin-top: 9px;
+}
+.delay__bottom{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-top: auto;
+    padding-left: 5px;
+}
+.delay__prize{
+    font-size: 18px;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    column-gap: 3px;
+    color: white;
+}
+.delay__prize.prizeRed{
+    color: #ff1b1b;
+}
+.delay__prize::before{
+    content: '';
+    display: block;
+    width: 32px;
+    height: 46px;
+    background: url('/images/crystal-currency.png') center center no-repeat;
+    background-size: contain;
+}
+.delay__buyBtnBx{
+    position: relative;
+    margin-left: 24px;
+}
+.delay__buyBtn{
+    margin: 0;
+    outline: none;
+    border: none;
+    background-color: transparent;
+    color: white;
+
+    position: relative;
+    font-size: 18px;
+    padding: 6px 32px;
+    z-index: 4;
+    cursor: pointer;
+}
+.delay__buyBtn::before,
+.delay__buyBtn::after{
+    content: '';
+    position: absolute;
+    display: block;
+    width: 60%;
+    height: 60%;
+    border-color: white;
+    border-style: solid;
+    pointer-events: none;
+    transition: width 200ms ease-in-out, height 200ms ease-in-out;
+}
+.delay__buyBtn::before{
+    right: 0;
+    top: 0;
+    border-width: 1px 1px 0 0;
+}
+.delay__buyBtn::after{
+    left: 0;
+    bottom: 0;
+    border-width: 0 0 1px 1px;
+}
+.delay__buyBtn:hover::before,
+.delay__buyBtn:hover::after{
+    width: 100%;
+    height: 100%;
+}
+
+.delay__prize.prizeRed + .delay__buyBtnBx .delay__buyBtn{
+    cursor: default;
+    pointer-events: none;
+}
+.delay__prize.prizeRed + .delay__buyBtnBx .delay__btnLine{
+    display: block;
+    position: absolute;
+    width: 56%;
+    height: 3px;
+    background-color: #ff1b1b;
+    border: none;
+    left: 50%;
+    top: 50%;
+    transform: translate(-49%, 0) rotate(-18deg);
+}
+
+.delay__stats{
+    display: flex;
+    flex-direction: row;
+    column-gap: 22px;
+    margin-left: 116px;
+}
+.delay__stat{
+    font-size: 16px;
+    font-weight: 300;
+    position: relative;
+}
+.delay__stat.statRed{
+    color: #ff1b1b;
+}
+.delay__stat.statRed::before{
+    content: '-';
+    margin-right: 2px;
+}
+.delay__stat.statGreen{
+    color: #2bd82b;
+}
+.delay__stat.statGreen::before{
+    content: '+';
+    margin-right: 2px;
+}
+.delay__stat.statGreen::after{
+    content: '';    
+    position: absolute;
+    left: 50%;
+    bottom: -6px;
+    transform: translateX(-50%);
+    width: 90%;
+    height: 1px;
+    background-color: #2bd82b;
+}
+.delay__stat.statYellow{
+    color: #e8e83c;
+}

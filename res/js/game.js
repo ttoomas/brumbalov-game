@@ -54,8 +54,8 @@ const voldemortHealthText = document.querySelector('.game__voldemortHealth');
 
 const brumbalHealthBar = document.querySelector('.brumbal__healthBar');
 
-let playerHealthOnStart = 30; // 10 - 9 = 1 / 10 = 0.1      // Player health - UPGRADE
-let voldemortHealthOnStart = 20; // 20 - 19 = 1 / 20 = 0.05   // Voldemort health - UPGRADE
+let playerHealthOnStart = 10; // 10 - 9 = 1 / 10 = 0.1      // Player health - UPGRADE
+let voldemortHealthOnStart = 1; // 20 - 19 = 1 / 20 = 0.05   // Voldemort health - UPGRADE
 
 let playerHealth,
     voldemortHealth,
@@ -196,8 +196,6 @@ function resetGame(){
     // Reset health bars
     playerHealth = playerHealthOnStart;
     voldemortHealth = voldemortHealthOnStart;
-
-    console.log(voldemortHealth);
 
     brumbalHealthBar.style.width = 100 + '%';
 
@@ -512,8 +510,6 @@ function checkVoldemortCollision(){
                 x: ((3 / 2 * voldemortBarScale) - 1.5)
             })
 
-            console.log(voldemortHealth);
-
             // Remove projectile from screen
             gameScene.remove(projectile);
             playerProjectiles.splice(index, 1);
@@ -612,10 +608,9 @@ function checkPlayerCollision(){
             // HealthBar
             brumbalBarScale -= (1 / playerHealthOnStart);
 
-            brumbalHealthBar.style.width = (brumbalBarScale * 100) + '%';
+            brumbalHealthBar.style.width = (brumbalBarScale * 100) + 
+            '%';
             
-            console.log(playerHealth);
-
 
             if(playerHealth <= 0){
                 voldemortWin();

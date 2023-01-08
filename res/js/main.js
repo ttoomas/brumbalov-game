@@ -39,6 +39,8 @@ let homeRaycaster = new THREE.Raycaster();
 let homeMouse = new THREE.Vector2();
 
 let mixer, clock;
+let animationLoopId;
+let endHomeAnimationFrame = false;
 let brumbalAnimation = true;
 
 let houseModels = [];
@@ -83,6 +85,12 @@ async function homeSceneInit(){
     animate();
 
     homeRenderer.domElement.addEventListener('click', handleHomeClick, false);
+    
+    
+    // Settings for transparent canvas - for upgrades
+    // const sceneBackgroundTexture = null;
+    // homeRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    // homeRenderer.setClearColor(0xffffff, 0)
 }
 
 function create2DRenderer(){
@@ -729,13 +737,10 @@ function resetCameraAndDelete(){
         else if(activeGameWindow){
             activeGameWindow = false;
 
-            resetHomeCamera();
+            resetHomeCameraWithoutAnimation();
 
-            battleChooseHtml.style.animation = "fadeOut 300ms ease-in-out forwards";
-
-            setTimeout(() => {
-                battleChooseHtml.style.animation = null;
-            }, 300);
+            battleChooseHtml.style.animation = "fadeOut 0ms ease-in-out forwards";
+            battleChooseHtml.style.animation = null;
         }
         else if(activeBrumbal){
             activeBrumbal = false;
@@ -832,6 +837,18 @@ function resetHomeCamera(){
         y: moveY,
         z: moveZ,
     })
+
+    activeZoomIn = false;
+}
+
+
+// Function to reset home camera settings without any animations
+function resetHomeCameraWithoutAnimation(){
+    homeCamera.position.set(6.5, 2, 0.5);
+    controlsVar.target.set(0, 0, 0);
+    houseObject.rotation.y = moveY;
+    houseObject.rotation.z = moveZ;
+
     activeZoomIn = false;
 }
 
@@ -857,9 +874,19 @@ function selectBattleModeHandler(){
                 let action = mixer.clipAction(clip);
 
                 action.reset();
-                action.time = 3;
+                action.time = 2;
                 action.paused = true;
             })
+
+            brumbalObject.traverse(((object) => {
+                if(object.name === "Empty001"){
+                    object.rotation.y = 1.3681986472264591;
+                }
+            }))
+
+            setTimeout(() => {
+                endHomeAnimationFrame = true;
+            }, 20);
         })
     })
 }
@@ -963,8 +990,21 @@ function moveCameraToBoard(){
 
 
 
+// FUNCTION TO START ANIMATION LOOP
+export function startAnimationLoop(){
+    endHomeAnimationFrame = false;
+
+    animate();
+}
+
+
 // ANIMATE
 function animate(){
+    if(endHomeAnimationFrame){
+        cancelAnimationFrame(animationLoopId);
+        return
+    }
+
     stats.begin();
 
     homeRenderer.render(homeScene, homeCamera);
@@ -974,8 +1014,7 @@ function animate(){
 
     let delta = clock.getDelta();
     if(mixer) mixer.update(delta);
-
-    requestAnimationFrame(animate);
+    animationLoopId = requestAnimationFrame(animate);
 
     stats.end();
 }
@@ -997,8 +1036,8 @@ function controlsFunction(){
     stats.showPanel(0);
     document.body.appendChild(stats.dom);
 
-    const axesHelper = new THREE.AxesHelper(20);
-    homeScene.add(axesHelper);
+    // const axesHelper = new THREE.AxesHelper(20);
+    // homeScene.add(axesHelper);
 }
 
 
