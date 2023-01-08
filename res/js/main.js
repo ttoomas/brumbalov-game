@@ -44,8 +44,11 @@ let endHomeAnimationFrame = false;
 let brumbalAnimation = true;
 
 let houseModels = [];
+let brumbalBone;
 
 let twoDRenderer;
+
+let activeUpgradeDelay = false;
 
 
 // THREE INIT
@@ -83,6 +86,8 @@ async function homeSceneInit(){
     bodyMouseMove();
 
     animate();
+
+    leaveFromUpgradeWeaponsDelay();
 
     homeRenderer.domElement.addEventListener('click', handleHomeClick, false);
     
@@ -139,7 +144,13 @@ async function importBrumbalModel(){
 
     brumbalObject.traverse(function(object) {
         object.frustumCulled = false;
+
+        if(object.name === "Empty001"){
+            brumbalBone = object;
+        }
     })
+    // scale, rotation
+    // if(brumbalTraverse.name === "Armature")
 
     mixer = new THREE.AnimationMixer(brumbalObject);
 
@@ -508,12 +519,7 @@ function handleHomeClick(e){
         else if(object.name.includes('Harry_Potter_Albus_Dumbledore001_')){
             console.log('clicked on brumbal');
 
-            brumbalObject.traverse(function(brumObject) {
-                if(brumObject.name === "Empty001"){
-                    brumbalCurrentPos = brumObject.position;
-                }
-            })
-
+            brumbalCurrentPos = brumbalBone.position;
 
             // Stop camera moovement
             activeZoomIn = true;
@@ -535,68 +541,58 @@ function handleHomeClick(e){
             })
 
             // Update brumbals rotation, camera position
-            brumbalObject.traverse(((object) => {
-                let brumbalTraverse = object;                
+            brumbalAniRotY = brumbalBone.rotation.y;
 
-                // POSITION
-                if(brumbalTraverse.name === "Empty001"){
-                    brumbalAniRotY = brumbalTraverse.rotation.y;
+            brumbalAniPosX = brumbalBone.position.x;
+            brumbalAniPosY = brumbalBone.position.y;
+            brumbalAniPosZ = brumbalBone.position.z;
 
-                    brumbalAniPosX = brumbalTraverse.position.x;
-                    brumbalAniPosY = brumbalTraverse.position.y;
-                    brumbalAniPosZ = brumbalTraverse.position.z;
+            // Reset brumbals position
+            gsap.to(brumbalBone.rotation, {
+                duration: 1,
+                y: Math.PI / -10,
+            })
 
-                    // Reset brumbals position
-                    gsap.to(brumbalTraverse.rotation, {
-                        duration: 1,
-                        y: Math.PI / -10,
-                    })
+            // Position camera
+            gsap.to(homeCamera.position, {
+                duration: 1,
+                x: 4.53707464607984,
+                y: 0.5787451538866971,
+                z: 0.0365650252885944
+            })
 
-                    // Position camera
-                    gsap.to(homeCamera.position, {
-                        duration: 1,
-                        x: 4.53707464607984,
-                        y: 0.5787451538866971,
-                        z: 0.0365650252885944
-                    })
+            gsap.to(controlsVar.target, {
+                duration: 1,
+                x: 0.053123,
+                y: 0.192154,
+                z: -0.396614
+            })
 
-                    gsap.to(controlsVar.target, {
-                        duration: 1,
-                        x: 0.053123,
-                        y: 0.192154,
-                        z: -0.396614
-                    })
+            // Position brumbal
+            gsap.to(brumbalBone.position, {
+                duration: 0.95,
+                x: 3.1,
+                y: 0.8,
+                z: 0.65,
+                onComplete: function(){
+                    // Set the battle choose elements
+                    battleChooseObject.position.set(brumbalCurrentPos.x, brumbalCurrentPos.y, brumbalCurrentPos.z);
+                    
+                    setTimeout(() => {
+                        moovingHandsAnimation.paused = true;
+                        runningCameraAnimation = false;
+                        
+                        getBrumbalsPosition(battleChooseHtml.style.transform);
 
-                    // Position brumbal
-                    gsap.to(brumbalTraverse.position, {
-                        duration: 0.95,
-                        x: 3.1,
-                        y: 0.8,
-                        z: 0.65,
-                        onComplete: function(){
-                            // Set the battle choose elements
-                            battleChooseObject.position.set(brumbalCurrentPos.x, brumbalCurrentPos.y, brumbalCurrentPos.z);
-                            
-                            setTimeout(() => {
-                                moovingHandsAnimation.paused = true;
-                                runningCameraAnimation = false;
-                                
-                                getBrumbalsPosition(battleChooseHtml.style.transform);
+                        console.log(battleChoosePos);
 
-                                console.log(battleChoosePos);
+                        battleChooseHtml.style.setProperty('--battleChooseX', (battleChoosePos.x + 125));
+                        battleChooseHtml.style.width = (window.innerWidth - battleChoosePos.x - 125) + 'px';
 
-                                battleChooseHtml.style.setProperty('--battleChooseX', (battleChoosePos.x + 125));
-                                battleChooseHtml.style.width = (window.innerWidth - battleChoosePos.x - 125) + 'px';
-
-                                battleChooseHtml.style.animation = "fadeIn 300ms ease-in-out forwards";
-                            }, 50);
-                        }
-                    })
+                        battleChooseHtml.style.animation = "fadeIn 300ms ease-in-out forwards";
+                    }, 50);
                 }
-
-                // SCALE, ROTATION
-                // if(brumbalTraverse.name === "Armature")
-            }))
+            })
         }
     }
     else{
@@ -633,6 +629,8 @@ function activeVocabularyHandler(object){
 function activeDoorHandler(object){
     if(object.name.includes("Brick_Door_")){
         console.log('clicked on door');
+
+        upgradeWeaponsDoor();
     }
     else{
         resetCameraAndDelete();
@@ -700,7 +698,16 @@ function resetHouseAndBrumbalModelRotation(){
 // Helpers
 function checkEscToResetCamera(){
     window.addEventListener('keydown', (e) => {
-        if(e.code === "Escape") resetCameraAndDelete();
+        if(e.code === "Escape" && activeVocabulary || activeDoor || activeArsenal || activeCauldron || activeBoard || activeGameWindow || activeBrumbal){
+            console.log('jjj');
+            resetCameraAndDelete();
+        }
+        if(e.code === "Escape" && activeUpgradeDelay){
+            startBrumbalWalking();
+
+            upgradeWeaponsDelay.style.display = "none";
+            questionMarkCanvas.style.display = "block";
+        }
     })
 }
 
@@ -785,30 +792,20 @@ function homeMeshTextDelete(deleteMesh, deleteParent,){
 }
 
 function resetBrumbalAni(){
-    brumbalObject.traverse((object) => {
-        let brumbalTraverse = object;
+    moovingHandsAnimation.paused = false;
 
-        if(brumbalTraverse.name === "Empty001"){
-            moovingHandsAnimation.paused = false;
+    gsap.to(brumbalBone.rotation, {
+        duration: 1,
+        y: brumbalAniRotY
+    })
 
-            gsap.to(brumbalTraverse.rotation, {
-                duration: 1,
-                y: brumbalAniRotY
-            })
-
-            gsap.to(brumbalTraverse.position, {
-                duration: 1,
-                x: brumbalAniPosX,
-                y: brumbalAniPosY,
-                z: brumbalAniPosZ,
-                onComplete: function(){
-                    brumbalGLTF.animations.forEach((clip) => {
-                        let action = mixer.clipAction(clip);
-                        
-                        action.paused = false;
-                    })
-                }
-            })
+    gsap.to(brumbalBone.position, {
+        duration: 1,
+        x: brumbalAniPosX,
+        y: brumbalAniPosY,
+        z: brumbalAniPosZ,
+        onComplete: function(){
+            startBrumbalWalking();
         }
     })
 }
@@ -878,26 +875,12 @@ function selectBattleModeHandler(){
                 action.paused = true;
             })
 
-            brumbalObject.traverse(((object) => {
-                if(object.name === "Empty001"){
-                    object.rotation.y = 1.3681986472264591;
-                }
-            }))
+            brumbalBone.rotation.y = 1.3681986472264591;
 
             setTimeout(() => {
                 endHomeAnimationFrame = true;
             }, 20);
         })
-    })
-}
-
-
-// EXPORT FUNCTION TO START BRUMBALS ANIMATION
-export function startBrumbalAnimation(){
-    brumbalGLTF.animations.forEach((clip) => {
-        let action = mixer.clipAction(clip);
-
-        action.paused = false;
     })
 }
 
@@ -990,6 +973,57 @@ function moveCameraToBoard(){
 
 
 
+// UPGRADES HANDLERS
+const upgradeWeaponsDelay = document.querySelector('.upgrade__weaponDelay');
+let questionMarkCanvas;
+
+function upgradeWeaponsDoor(){
+    activeDoor = false;
+    activeUpgradeDelay = true;
+
+    stopBrumbalWalking();
+
+    upgradeWeaponsDelay.style.display = "flex";
+    questionMarkCanvas.style.display = "none";
+
+    resetHomeCameraWithoutAnimation();
+}
+
+
+// Function to leave upgrade delay
+const upgradeDelayLeaveBtn = document.querySelector('.delay__leaveBtn');
+
+function leaveFromUpgradeWeaponsDelay(){
+    upgradeDelayLeaveBtn.addEventListener('click', () => {
+        if(activeUpgradeDelay){
+            startBrumbalWalking();
+
+            upgradeWeaponsDelay.style.display = "none";
+            questionMarkCanvas.style.display = "block";
+        }
+    })
+}
+
+
+// FUNCTION TO STOP AND START BRUMBAL ANIMATION
+function stopBrumbalWalking(){
+    brumbalGLTF.animations.forEach((clip) => {
+        let action = mixer.clipAction(clip);
+
+        action.paused = true;
+    })
+}
+
+export function startBrumbalWalking(){
+    brumbalGLTF.animations.forEach((clip) => {
+        let action = mixer.clipAction(clip);
+
+        action.paused = false;
+    })
+}
+
+
+
 // FUNCTION TO START ANIMATION LOOP
 export function startAnimationLoop(){
     endHomeAnimationFrame = false;
@@ -1071,6 +1105,8 @@ async function questionSceneInit(){
     questionRenderer.setSize(70, 80);
     questionRenderer.domElement.classList.add('questionScene');
     home.appendChild(questionRenderer.domElement);
+
+    questionMarkCanvas = questionRenderer.domElement;
 
     // Functions
     await importQuestionModel();

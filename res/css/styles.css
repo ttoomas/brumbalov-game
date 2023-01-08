@@ -523,7 +523,9 @@ p, h1, h2, h3, h4, h5, h6{
     opacity: 0;
     rotate: 28deg;
     pointer-events: none;
-    transition: all 250ms ease-in-out;
+    transition-duration: 250ms;
+    transition-timing-function: ease-in-out;
+    transition-property: opacity, right, top, rotate;
 }
 .battle__titleHighlight:hover::before{
     opacity: 1;
@@ -570,7 +572,7 @@ p, h1, h2, h3, h4, h5, h6{
     pointer-events: none;
     border: 2px solid red;
     z-index: -1;
-    transition: all 200ms ease-in-out;
+    transition: width 200ms ease-in-out, height 200ms ease-in-out;
 }
 
 .battle__btn:hover::before{
@@ -652,21 +654,49 @@ p, h1, h2, h3, h4, h5, h6{
     height: 100vh;
     display: flex;
     justify-content: flex-end;
+
     display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+.delay__brumbalImg{
+    height: 100%;
+    width: 525px;
+    background-image: url('/images/brumbal-art.png');
+    background-size: cover;
+    background-position: center center;
 }
 .delay__container{
     display: flex;
     flex-direction: column;
-    width: calc(100% - 430px);
+    width: calc(100% - 525px);
     height: 100%;
     padding: 50px 20px;
     background-color: black;
     color: white;
 }
+.delay__leaveBx{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+.delay__leaveBtn{
+    padding: 8px 20px;
+    font-size: 17px;
+    background-color: black;
+    color: white;
+    border: 1px solid white;
+    outline: 0;
+    cursor: pointer;
+    transition: border-color 200ms ease-in-out;
+}
+.delay__leaveBtn:hover{
+    border-color: #e8e83c;
+}
 .delay__title{
     font-size: 42px;
     font-weight: 600;
-    text-align: center;
     color: transparent;
     -webkit-text-stroke: 1px white;
 }
@@ -674,7 +704,7 @@ p, h1, h2, h3, h4, h5, h6{
     display: flex;
     flex-direction: row;
     justify-content: center;
-    margin-top: 36px;
+    margin-top: 42px;
     column-gap: 16px;
 }
 .delay__currStat{
@@ -718,7 +748,7 @@ p, h1, h2, h3, h4, h5, h6{
 }
 .delay__image{
     width: 200px;
-    height: 208px;
+    height: 206px;
     object-fit: cover;
     object-position: center center;
     border-radius: 30px;

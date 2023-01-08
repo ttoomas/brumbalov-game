@@ -1,4 +1,4 @@
-import { startBrumbalAnimation } from "../js/main.js";
+import { startBrumbalWalking } from "../js/main.js";
 import { startAnimationLoop as startHomeAnimationLoop } from "../js/main.js";
 
 
@@ -23,7 +23,7 @@ export function switchGameScene(){
     else{
         
         startHomeAnimationLoop();
-        startBrumbalAnimation();
+        startBrumbalWalking();
         
         home.style.display = "block";
         game.style.display = "none";
