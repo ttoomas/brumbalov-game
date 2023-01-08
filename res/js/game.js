@@ -54,7 +54,7 @@ const voldemortHealthText = document.querySelector('.game__voldemortHealth');
 const brumbalHealthBar = document.querySelector('.brumbal__healthBar');
 
 let playerHealthOnStart = 10; // 10 - 9 = 1 / 10 = 0.1      // Player health - UPGRADE
-let voldemortHealthOnStart = 1; // 20 - 19 = 1 / 20 = 0.05   // Voldemort health - UPGRADE
+let voldemortHealthOnStart = 10; // 20 - 19 = 1 / 20 = 0.05   // Voldemort health - UPGRADE
 
 let playerHealth,
     voldemortHealth,
@@ -652,13 +652,13 @@ gotoHouseBtn.addEventListener('click', () => {
 // GAME CONTROLS
 let stats;
 function gameControlsInit(){
-    // gameControls.enabled = false;
+    gameControls.enabled = false;
 
-    gameControls.addEventListener('change', () => {
-        console.log(gameCamera.position);
-        console.log(`target:`);
-        console.log(gameControls.target);
-    })
+    // gameControls.addEventListener('change', () => {
+    //     console.log(gameCamera.position);
+    //     console.log(`target:`);
+    //     console.log(gameControls.target);
+    // })
 
     // Development only
     stats = new Stats();
